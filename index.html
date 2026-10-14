@@ -73,7 +73,7 @@ button.tab{border:0;font:inherit;color:inherit}
 <aside id="side"></aside><main id="main"></main>
 <div id="modal"><div class="box" id="mbox"></div></div><div id="toast"></div><div id="printArea"></div>
 <script>
-const KEY='ecr2026-v1',$=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9);
+const SHARE=(()=>{if(!/[#&]a=/.test(location.hash))return null;try{const m=/[#&]a=([A-Za-z0-9_-]+)/.exec(location.hash),s=m[1].replace(/-/g,'+').replace(/_/g,'/'),j=JSON.parse(atob(s+'='.repeat((4-s.length%4)%4)));const ok=u=>/^https:\/\//.test(u)||/^http:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(u);return j&&ok(j.u)&&typeof j.k==='string'&&typeof j.t==='string'?{u:new URL(j.u).origin,k:j.k,t:j.t}:{bad:1}}catch(e){return{bad:1}}})();const KEY='ecr2026-v1',$=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KG=['Socio-Emotional Development','Language and Literacy','Mathematics','Physical Health and Motor Development','Creative and Aesthetic Development'];
 const G1=['Language','Reading and Literacy','Mathematics','Makabansa','GMRC'];
@@ -81,8 +81,8 @@ const RATE=['','Consistent','Developing','Beginning'];
 const FORMS=[['SF1','School Register','Adviser · start of year','learners'],['SF2','Daily Attendance','Adviser · daily, monthly','att'],['SF3','Books Issued & Returned','School head · start & end of year','books'],['SF4','Learner Movement & Attendance','School head · monthly'],['SF5','Promotion & Level of Proficiency','Adviser · end of year'],['SF6','Summarized Promotion Report','School head · end of year'],['SF7','Personnel Assignment List','School head · start of year'],['SF8','Health & Nutrition Report','Adviser · baseline & endline'],['SF9','Learner\'s Progress Report Card','Adviser · every term'],['SF10','Permanent Academic Record','Adviser · end of year'],['ECR','Class Record','Subject teacher · every term','record']];
 let S=load(),view='dash',tab=0,term=1,month='2026-09',dirty=false;
 function fresh(){return{cur:null,classes:[],saved:null,p:{name:'',pos:'Teacher III',school:'',sid:'',head:'',year:'SY 2026-2027'}}}
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){return fresh()}}
-function save(manual){try{S.saved=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(S));dirty=false}catch(e){toast('Could not save in this browser')}paintChip();if(CF.tok){clearTimeout(syncT);syncT=setTimeout(()=>cloudSync(),2500)}if(manual)toast(CF.tok?'Saved — syncing…':'Saved on this device ✓')}
+function load(){if(SHARE)return fresh();try{return JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){return fresh()}}
+function save(manual){if(SHARE)return;try{S.saved=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(S));dirty=false}catch(e){toast('Could not save in this browser')}paintChip();if(CF.tok){clearTimeout(syncT);syncT=setTimeout(()=>cloudSync(),2500)}if(manual)toast(CF.tok?'Saved — syncing…':'Saved on this device ✓')}
 function commit(){dirty=true;paintChip();clearTimeout(commit.t);commit.t=setTimeout(()=>save(),600)}
 function paintChip(){const c=$('#chip');if(!c)return;c.className='chip'+(dirty?' w':'');c.textContent=dirty?'● Saving…':S.saved?'● Saved '+new Date(S.saved).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'● Not saved yet'}
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800)}
@@ -93,7 +93,7 @@ function openModal(h){$('#mbox').innerHTML=h;$('#modal').classList.add('on')}fun
 $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
 
 function render(){
- if(scan.on||scan.starting)stopScan(true);if(ensureQR())commit();
+ if(SHARE)return shareRender();if(scan.on||scan.starting)stopScan(true);if(ensureQR())commit();
  const nav=[['dash','Dashboard',''],['h','Teacher forms'],['learners','Learners','SF1'],['record','Class Record','ECR'],['att','Attendance','SF2'],['books','Books','SF3'],['h','School head forms'],['soon','Promotion · Health · Report Cards','SF5-10'],['set','Settings & Profile','']];
  $('#side').innerHTML=`<div class="logo"><i>SF</i><div>E-Class Record<small>SF1–SF10 · ${esc(S.p.year)}</small></div></div>`+nav.map(n=>n[0]==='h'?`<h6>${n[1]}</h6>`:`<div class="nav ${view===n[0]?'on':''}" onclick="${n[0]==='soon'?"toast('Not included in this version')":`go('${n[0]}')`}"><span>${n[1]}</span>${n[2]?`<b>${n[2]}</b>`:''}</div>`).join('')+`<p style="font-size:11px;color:#7d8db3;margin:16px 6px">Auto-saves every change on this device. Back up weekly in Settings.</p>`;
  const c=C(),titles={dash:'Dashboard',learners:'Learners',record:'Class Record',att:'Attendance',books:'Books',set:'Settings & Profile'};
@@ -129,7 +129,7 @@ function attGrid(){const c=C(),g=sorted(c),ALL=days(),A=(c.att[month]||={}),NC=A
  const nm=g.M.length,nf=g.F.length,avgOf=L=>D.length?present(L).reduce((a,b)=>a+b,0)/D.length:0;
  const sm=[['Enrolment as of first Friday',nm,nf,n],['Registered learners, end of month',nm,nf,n],['Average daily attendance',avgOf(g.M).toFixed(2),avgOf(g.F).toFixed(2),avg.toFixed(2)],['% of attendance for the month',nm?(avgOf(g.M)/nm*100).toFixed(1):'0.0',nf?(avgOf(g.F)/nf*100).toFixed(1):'0.0',pct.toFixed(1)]];
  return `<div class="card"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div><span class="tag">SF2</span><h2 style="margin:2px 0">Daily Attendance</h2><div class="sub" style="margin:0">In the <b>Class?</b> row, tap a date to mark it ✓ (has class) or ✕ (no class). For learners, tap a box once for absent (✕), twice for tardy, three times to clear. Cutting classes (C) and Present (✓) marks come from the Photo cards and Scan QR tabs.</div></div><span class="right noprint"><input type="month" value="${month}" onchange="month=this.value;render()"><button class="btn" onclick="clearMonth()">Clear month</button><button class="btn d" onclick="window.print()">Print / Export SF2</button></span></div>
- <table class="att" style="margin-top:12px"><tr><th class="n">Learner (${D.length} school days)</th>${ALL.map(d=>`<th>${d[0]}<br>${d[1]}</th>`).join('')}<th>Absent</th><th>Tardy</th><th>Cut</th></tr><tr class="cls"><td class="n"><b>Class?</b></td>${ALL.map(([d])=>`<td><span class="cell ${NC[d]?'x':'ok'}" title="${NC[d]?'No class':'Has class'}" onclick="togDay(${d})">${NC[d]?'✕':'✓'}</span></td>`).join('')}<td colspan="3"></td></tr><tr><th colspan="${ALL.length+4}" style="text-align:left">Male</th></tr>${g.M.map(row).join('')}<tr><th colspan="${ALL.length+4}" style="text-align:left">Female</th></tr>${g.F.map((l,i)=>row(l,i)).join('')}<tr><td class="n"><b>Present per day</b></td>${prAll(all).map(v=>`<td><b>${v}</b></td>`).join('')}<td colspan="3"></td></tr></table></div>
+ <table class="att" style="margin-top:12px"><tr><th class="n">Learner (${D.length} school days)</th>${ALL.map(d=>`<th>${d[0]}<br>${d[1]}</th>`).join('')}<th>Absent</th><th>Tardy</th><th>Cut</th></tr><tr class="cls"><td class="n"><b>Class?</b></td>${ALL.map(([d])=>`<td><span class="cell ${NC[d]?'x':'ok'}" title="${NC[d]?'No class'+calNote(d):'Has class'}" onclick="togDay(${d})">${NC[d]?'✕':'✓'}</span></td>`).join('')}<td colspan="3"></td></tr><tr><th colspan="${ALL.length+4}" style="text-align:left">Male</th></tr>${g.M.map(row).join('')}<tr><th colspan="${ALL.length+4}" style="text-align:left">Female</th></tr>${g.F.map((l,i)=>row(l,i)).join('')}<tr><td class="n"><b>Present per day</b></td>${prAll(all).map(v=>`<td><b>${v}</b></td>`).join('')}<td colspan="3"></td></tr></table></div>
  <div class="card" style="max-width:460px"><h3 style="margin-top:0">Monthly summary</h3><table><tr><th>Item</th><th>M</th><th>F</th><th>Total</th></tr>${sm.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')}</table></div>`}
 function tog(id,d){const A=(C().att[month]||={}),a=(A[id]||={});a[d]=({'':'x',x:'t',t:'',p:'x',c:'x'})[a[d]||''];if(!a[d])delete a[d];commit();render()}
 function togDay(d){const A=(C().att[month]||={}),nc=(A._nc||={});if(nc[d])delete nc[d];else nc[d]=1;commit();render()}
@@ -180,16 +180,16 @@ function renSubj(i){const u=C().ns[i],n=prompt('Subject name:',u.n);if(n&&n.trim
 function renDSubj(i){const c=C(),o=c.subj[i],n=prompt('Subject name:',o);if(!n||!n.trim()||n.trim()===o)return;const m=n.trim();c.subj[i]=m;Object.keys(c.rec).filter(k=>k.startsWith(o+'|')).forEach(k=>{c.rec[m+k.slice(o.length)]=c.rec[k];delete c.rec[k]});commit();render()}
 function delSubj(i){if(C().ns.length<2)return toast('Keep at least one subject');if(confirm('Delete this subject and its grades?')){C().ns.splice(i,1);tab=0;closeModal();commit();render()}}
 /* cloud sync via Supabase REST (email login; one row of JSON per user) */
-const SK='ecr-sync';let CF=(()=>{try{return JSON.parse(localStorage.getItem(SK))||{}}catch(e){return{}}})(),syncMsg='',syncT;const cfSave=()=>localStorage.setItem(SK,JSON.stringify(CF)),base=()=>{try{return new URL(CF.url).origin}catch(e){return CF.url}},sbH=t=>({apikey:CF.key,Authorization:'Bearer '+(t||CF.key),'Content-Type':'application/json'});
+const SK='ecr-sync';let CF=SHARE?{}:(()=>{try{return JSON.parse(localStorage.getItem(SK))||{}}catch(e){return{}}})(),syncMsg='',syncT;const cfSave=()=>{if(!SHARE)localStorage.setItem(SK,JSON.stringify(CF))},base=()=>{try{return new URL(CF.url).origin}catch(e){return CF.url}},sbH=t=>({apikey:CF.key,Authorization:'Bearer '+(t||CF.key),'Content-Type':'application/json'});
 async function sbAuth(path,body){const r=await fetch(base()+'/auth/v1/'+path,{method:'POST',headers:sbH(),body:JSON.stringify(body)}),j=await r.json();if(!r.ok)throw new Error(j.msg||j.error_description||j.message||'Request failed');return j}
 function setSess(j){Object.assign(CF,{tok:j.access_token,ref:j.refresh_token,uid:j.user.id,email:j.user.email,exp:Date.now()+(j.expires_in-60)*1000});cfSave()}
 async function token(){if(!CF.tok)throw new Error('Not signed in');if(Date.now()>CF.exp)setSess(await sbAuth('token?grant_type=refresh_token',{refresh_token:CF.ref}));return CF.tok}
 async function cloudAuth(up){CF.url=$('#cu').value.trim();try{CF.url=new URL(CF.url).origin}catch(e){}CF.key=$('#ck').value.trim();const em=$('#ce').value.trim(),pw=$('#cp').value;try{if(!/^https:\/\//.test(CF.url)||!CF.key||!em||!pw)throw new Error('Fill in project URL, key, email and password');if(up){const j=await sbAuth('signup',{email:em,password:pw});if(!j.access_token){CF.email=em;cfSave();return toast('Check your email to confirm, then sign in')}setSess(j)}else setSess(await sbAuth('token?grant_type=password',{email:em,password:pw}));await cloudSync(true);render()}catch(e){toast(e.message)}}
 async function push(t,u){const r=await fetch(u+'?on_conflict=user_id',{method:'POST',headers:{...sbH(t),Prefer:'resolution=merge-duplicates'},body:JSON.stringify({user_id:CF.uid,data:S,updated_at:new Date().toISOString()})});if(!r.ok)throw new Error('Upload failed ('+r.status+')')}
-async function cloudSync(first){if(!CF.tok||cloudSync.busy)return;cloudSync.busy=1;try{const t=await token(),u=base()+'/rest/v1/records',r=await fetch(u+'?select=data',{headers:sbH(t)});if(!r.ok)throw new Error('Download failed ('+r.status+') — did you run the setup SQL?');const rows=await r.json(),rem=rows[0]&&rows[0].data;
+async function cloudSync(first){if(SHARE||!CF.tok||cloudSync.busy)return;cloudSync.busy=1;try{const t=await token(),u=base()+'/rest/v1/records',r=await fetch(u+'?select=data',{headers:sbH(t)});if(!r.ok)throw new Error('Download failed ('+r.status+') — did you run the setup SQL?');const rows=await r.json(),rem=rows[0]&&rows[0].data;
  if(rem&&(rem.saved||'')>(S.saved||'')){if(!first||!S.classes.length||confirm('The cloud copy is newer than this device. Replace this device with the cloud copy?')){S=rem;localStorage.setItem(KEY,JSON.stringify(S));render()}}
  else if(!rem||(S.saved||'')>(rem.saved||'')){if(!rem||!first||confirm('This device is newer than the cloud copy. Upload and replace the cloud copy?'))await push(t,u)}
- syncMsg='Synced '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch(e){syncMsg='Sync error: '+e.message}finally{cloudSync.busy=0;const m=$('#smsg');if(m)m.textContent=syncMsg}}
+ await pullShared();syncMsg='Synced '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch(e){syncMsg='Sync error: '+e.message}finally{cloudSync.busy=0;const m=$('#smsg');if(m)m.textContent=syncMsg}}
 function cloudCard(){const on=!!CF.tok;return `<div class="card"><h3 style="margin-top:0">☁ Cloud sync (use on any device)</h3>${on?`<p>Signed in as <b>${esc(CF.email)}</b> · <span id="smsg" class="sub">${esc(syncMsg)}</span></p><button class="btn g" onclick="cloudSync(true).then(render)">Sync now</button> <button class="btn r" onclick="CF.tok=CF.ref=null;cfSave();render()">Sign out</button>`:`<div class="grid2"><label>Supabase project URL<input id="cu" value="${esc(CF.url||'')}" placeholder="https://xxxx.supabase.co"></label><label>Anon public key<input id="ck" value="${esc(CF.key||'')}"></label><label>Email<input id="ce" type="email" value="${esc(CF.email||'')}"></label><label>Password<input id="cp" type="password"></label></div><p><button class="btn g" onclick="cloudAuth(0)">Sign in</button> <button class="btn" onclick="cloudAuth(1)">Create account</button></p>`}<details><summary>One-time setup</summary><ol class="sub"><li>Create a free project at supabase.com.</li><li>SQL Editor: run the SQL below.</li><li>Project Settings → API: copy the Project URL and the anon public key into the boxes above.</li><li>Authentication → Providers → Email: turn off "Confirm email" (or confirm through the email link).</li><li>On every device: open this HTML, enter the same URL, key, email and password, then Sign in.</li></ol><pre style="white-space:pre-wrap;background:#f1f4fb;padding:8px;border-radius:8px;font-size:12px">create table records (user_id uuid primary key references auth.users on delete cascade, data jsonb not null, updated_at timestamptz default now());
 alter table records enable row level security;
 create policy "own row" on records for all using (auth.uid()=user_id) with check (auth.uid()=user_id);</pre><p class="sub">The last device to save wins, so let it sync before you switch devices. Learner names and grades are stored on Supabase's servers: check your school's data-privacy rules first.</p></details></div>`}
@@ -269,7 +269,7 @@ function profHTML(l){const c=C(),pv=pend&&pend.id===l.id;
  <h4 style="margin:14px 0 6px">Student QR Code</h4>
  <div class="prow"><div id="qrbox"></div><div style="flex:1;min-width:150px"><div class="sub" style="margin:0 0 8px">Holds a random ID only. No name, LRN or birth date is inside it.</div><button class="btn d" onclick="dlQR('${l.id}')">Download QR code</button> <button class="btn" onclick="printQR('${l.id}')">Print QR code</button> <button class="btn r" onclick="regenQR('${l.id}')">Create new QR code</button></div></div>
  <div style="text-align:right;margin-top:12px"><button class="btn" onclick="closeModal()">Close</button></div>`}
-function openProfile(id){const l=findL(id);if(!l)return;pend=null;profId=id;openModal('<div id="prof">'+profHTML(l)+'</div>');drawQR(l)}
+function openProfile(id){if(SHARE)return;const l=findL(id);if(!l)return;pend=null;profId=id;openModal('<div id="prof">'+profHTML(l)+'</div>');drawQR(l)}
 function paintProf(l){const e=$('#prof');if(e){e.innerHTML=profHTML(l);drawQR(l)}}
 function drawQR(l){const b=$('#qrbox');if(!b||!l.qr)return;const cv=qrCanvas(l.qr,248);cv.className='qrc';cv.setAttribute('role','img');cv.setAttribute('aria-label','QR code for '+fullName(l));b.replaceChildren(cv)}
 function pickPhoto(id,f){const l=findL(id);if(!l||!f)return;
@@ -295,26 +295,49 @@ function dayInfo(c,date){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(date||'');if(!
 function getSt(c,l,date){return((c.att[date.slice(0,7)]||{})[l.id]||{})[+date.slice(8,10)]||''}
 function setSt(c,l,date,v){const A=(c.att[date.slice(0,7)]||={}),a=(A[l.id]||={}),d=+date.slice(8,10);if(v)a[d]=v;else delete a[d];if(!Object.keys(a).length)delete A[l.id];commit()}
 function hl(id){const e=document.querySelector('.pc[data-id="'+id+'"]');if(e){e.classList.add('hit');setTimeout(()=>e.classList.remove('hit'),1500)}}
-function pickSt(id,v){const c=C(),l=findL(id);if(!l)return;if(!dayInfo(c,attDate).ok)return toast('Pick a school day with class first');const nv=getSt(c,l,attDate)===v?'':v;setSt(c,l,attDate,nv);paintAtt();const b=document.querySelector('.pc[data-id="'+id+'"] .b'+v);if(b)b.focus();toast(nv?fullName(l)+' marked '+ST[nv][1]:fullName(l)+' cleared (not recorded)')}
+function pickSt(id,v){if(SHARE)return sharePick(id,v);const c=C(),l=findL(id);if(!l)return;if(!dayInfo(c,attDate).ok)return toast('Pick a school day with class first');const nv=getSt(c,l,attDate)===v?'':v;setSt(c,l,attDate,nv);paintAtt();const b=document.querySelector('.pc[data-id="'+id+'"] .b'+v);if(b)b.focus();toast(nv?fullName(l)+' marked '+ST[nv][1]:fullName(l)+' cleared (not recorded)')}
 function setAttDate(v){if(!v)return;attDate=v;month=v.slice(0,7);const e=$('#attDate');if(e)e.value=v;paintAtt()}
 function setAttMode(m){if(m===attMode)return;stopScan(true);attMode=m;render()}
 function makeClassDay(){month=attDate.slice(0,7);togDay(+attDate.slice(8,10))}
 function sumHTML(){const c=C(),i=dayInfo(c,attDate),n={p:0,x:0,t:0,c:0,n:0};if(i.ok)c.learners.forEach(l=>{n[getSt(c,l,attDate)||'n']++});
- return `<div style="font-weight:700;margin-bottom:8px">${dateLabel(attDate)} · ${esc(c.name)}</div>`+(i.ok?`<div class="cnts" role="status" aria-label="Attendance totals">${[['p','✓ Present'],['x','X Absent'],['t','L Late'],['c','C Cutting classes'],['n','Not yet recorded']].map(k=>`<span class="cnt ${k[0]}">${k[1]}: ${n[k[0]]}</span>`).join('')}</div>`:'')}
+ const ci=i.ok?calInfo(attDate):null;
+ return `<div style="font-weight:700;margin-bottom:8px">${dateLabel(attDate)} · ${esc(c.name)}</div>`+(ci?`<div class="smsg warn" style="margin:0 0 8px">Official non-class day: ${esc(ci.name)}. It is not marked as no class yet. ${SHARE?'':'<button class="btn" onclick="makeClassDay()">Mark as no class</button>'}</div>`:'')+(i.ok?`<div class="cnts" role="status" aria-label="Attendance totals">${[['p','✓ Present'],['x','X Absent'],['t','L Late'],['c','C Cutting classes'],['n','Not yet recorded']].map(k=>`<span class="cnt ${k[0]}">${k[1]}: ${n[k[0]]}</span>`).join('')}</div>`:'')}
 function cardsHTML(){const c=C(),i=dayInfo(c,attDate);
- if(!i.ok)return i.why==='weekend'?'<p class="sub" style="grid-column:1/-1">That date is a weekend, so there is no class. Pick a school day.</p>':i.why==='noclass'?'<p class="sub" style="grid-column:1/-1">That date is marked "No class" in the SF2 grid. <button class="btn" onclick="makeClassDay()">Mark it as a class day</button></p>':'<p class="sub" style="grid-column:1/-1">Choose an attendance date.</p>';
+ if(!i.ok)return i.why==='weekend'?'<p class="sub" style="grid-column:1/-1">That date is a weekend, so there is no class. Pick a school day.</p>':i.why==='noclass'?'<p class="sub" style="grid-column:1/-1">That date is marked "No class" in the SF2 grid'+(calInfo(attDate)?' ('+esc(calInfo(attDate).name)+')':'')+'. '+(SHARE?'':'<button class="btn" onclick="makeClassDay()">Mark it as a class day</button>')+'</p>':'<p class="sub" style="grid-column:1/-1">Choose an attendance date.</p>';
  if(!c.learners.length)return '<p class="sub" style="grid-column:1/-1">No learners yet. Add them under Learners.</p>';
  const g=sorted(c),card=l=>{const cur=getSt(c,l,attDate),nm=esc(fullName(l));
-  return `<div class="pc" data-id="${l.id}"><button class="pavb" onclick="openProfile('${l.id}')" aria-label="Open profile of ${nm}">${avatar(l,84)}</button><div class="pn">${nm}</div><div class="ps ${cur}">${cur?ST[cur][1]:'Not recorded'}</div><div class="pb" role="group" aria-label="Attendance for ${nm}">${['p','x','t','c'].map(k=>`<button class="sb b${k} ${cur===k?'on':''}" aria-pressed="${cur===k}" aria-label="${ST[k][1]}" title="${ST[k][1]}" onclick="pickSt('${l.id}','${k}')">${ST[k][0]}</button>`).join('')}</div></div>`};
+  return `<div class="pc" data-id="${l.id}">${SHARE?avatar(l,84):`<button class="pavb" onclick="openProfile('${l.id}')" aria-label="Open profile of ${nm}">${avatar(l,84)}</button>`}<div class="pn">${nm}</div><div class="ps ${cur}">${cur?ST[cur][1]:'Not recorded'}</div><div class="pb" role="group" aria-label="Attendance for ${nm}">${['p','x','t','c'].map(k=>`<button class="sb b${k} ${cur===k?'on':''}" aria-pressed="${cur===k}" aria-label="${ST[k][1]}" title="${ST[k][1]}" onclick="pickSt('${l.id}','${k}')">${ST[k][0]}</button>`).join('')}</div></div>`};
  return (g.M.length?`<h4>Male (${g.M.length})</h4>`+g.M.map(card).join(''):'')+(g.F.length?`<h4>Female (${g.F.length})</h4>`+g.F.map(card).join(''):'')}
 function paintAtt(){const s=$('#attSum'),g=$('#attCards');if(s)s.innerHTML=sumHTML();if(g)g.innerHTML=cardsHTML()}
 function scanPanel(){return `<div class="card noprint"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><h3 style="margin:0;flex:1;min-width:160px">Scan student QR code</h3><select id="camSel" hidden onchange="switchCam(this.value)" aria-label="Choose camera"></select><button id="sStart" class="btn g" onclick="startScan()">Start scanner</button><button id="sStop" class="btn" onclick="stopScan()" disabled>Stop scanner</button></div>
  <div id="reader" aria-label="Camera preview"></div><div id="scanMsg" class="smsg" role="status" aria-live="polite">Press Start scanner. Your browser will ask for camera access.</div>
  <p class="sub" style="margin:8px 0 0">A valid scan marks that student Present for the date below. Hold the code steady inside the frame, about 15–25 cm away, in good light.</p></div>`}
 function att(){const c=C();if(attMode!=='grid')month=attDate.slice(0,7);
- const sw=`<div class="tabs noprint" role="tablist" aria-label="Attendance mode">${[['grid','SF2 grid'],['photo','Photo cards'],['scan','Scan QR']].map(t=>`<button role="tab" aria-selected="${attMode===t[0]}" class="tab ${attMode===t[0]?'on':''}" onclick="setAttMode('${t[0]}')">${t[1]}</button>`).join('')}</div>`;
- if(attMode==='grid')return sw+attGrid();
+ const sw=`<div class="tabs noprint" role="tablist" aria-label="Attendance mode">${[['grid','SF2 grid'],['photo','Photo cards'],['scan','Scan QR']].map(t=>`<button role="tab" aria-selected="${attMode===t[0]}" class="tab ${attMode===t[0]?'on':''}" onclick="setAttMode('${t[0]}')">${t[1]}</button>`).join('')}<button class="btn y" style="margin-left:auto" onclick="openShare()">🔗 Share link</button></div>`;
+ if(attMode==='grid')return sw+calPanel()+attGrid();
  return sw+`<div class="card noprint" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap"><label style="width:190px">Attendance date<input type="date" id="attDate" value="${attDate}" onchange="setAttDate(this.value)"></label><button class="btn" onclick="setAttDate(todayISO())">Today</button><div class="sub" style="margin:0;flex:1;min-width:200px">Saved in the same SF2 record as the grid, for the class chosen at the top.</div></div>`+(attMode==='scan'?scanPanel():'')+`<div class="card"><div id="attSum">${sumHTML()}</div><div id="attCards" class="pgrid" style="margin-top:12px">${cardsHTML()}</div></div>`}
+
+
+/* --- Philippine school calendar: DepEd SY 2026-2027 (DepEd Order No. 009, s. 2026) + national holidays (Proclamation Nos. 1006 and 1427) --- */
+const PHCAL={open:'2026-06-08',close:'2027-04-08',brk:['2026-12-19','2027-01-03'],
+ hol:{'2026-06-12':['Independence Day','regular holiday'],'2026-08-21':['Ninoy Aquino Day','special non-working day'],'2026-08-31':['National Heroes Day','regular holiday'],'2026-11-02':["All Souls' Day",'special non-working day'],'2026-11-30':['Bonifacio Day','regular holiday'],'2026-12-08':['Feast of the Immaculate Conception of Mary','special non-working day'],'2026-12-24':['Christmas Eve','special non-working day'],'2026-12-25':['Christmas Day','regular holiday'],'2026-12-30':['Rizal Day','regular holiday'],'2026-12-31':['Last Day of the Year','special non-working day'],'2027-01-01':["New Year's Day",'regular holiday'],'2027-03-25':['Maundy Thursday','regular holiday'],'2027-03-26':['Good Friday','regular holiday']}};
+function calInfo(iso){const w=new Date(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10)).getDay();if(!w||w>5)return null;const P=PHCAL,h=P.hol[iso];
+ if(iso<P.open)return{why:'before',name:'Before the school year opens ('+fmtDate(P.open)+')'};
+ if(iso>P.close)return{why:'after',name:'After the school year closes ('+fmtDate(P.close)+')'};
+ if(h)return{why:'holiday',name:h[0]+' ('+h[1]+')'};
+ if(iso>=P.brk[0]&&iso<=P.brk[1])return{why:'break',name:'Year-end break'};
+ return null}
+function calNote(d){const i=calInfo(month+'-'+String(d).padStart(2,'0'));return i?' – '+i.name:''}
+function applyCal(all){const cls=all?S.classes:[C()],ms=[];for(let i=0;i<11;i++){const t=new Date(2026,5+i,1);ms.push(t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0'))}
+ let n=0;cls.forEach(c=>ms.forEach(ym=>{const last=new Date(+ym.slice(0,4),+ym.slice(5,7),0).getDate();for(let d=1;d<=last;d++){if(!calInfo(ym+'-'+String(d).padStart(2,'0')))continue;const A=(c.att[ym]||={}),nc=(A._nc||={});if(!nc[d]){nc[d]=1;n++}}}));
+ commit();toast(n?`Marked ${n} no-class day${n>1?'s':''} for ${cls.length>1?cls.length+' classes':'this class'}. Tap a date in the Class? row to undo any.`:'Official no-class days were already marked.');render()}
+function calPanel(){const c=C(),ym=month,P=PHCAL,inSY=ym>=P.open.slice(0,7)&&ym<=P.close.slice(0,7),y=+ym.slice(0,4),mo=+ym.slice(5,7),last=new Date(y,mo,0).getDate(),rows=[];
+ if(inSY)for(let d=1;d<=last;d++){const i=calInfo(ym+'-'+String(d).padStart(2,'0'));if(i)rows.push([d,i])}
+ const marked=d=>!!(((c.att[ym]||{})._nc||{})[d]),g=[];
+ rows.forEach(([d,i])=>{const L=g[g.length-1];if(L&&L.n===i.name&&d-L.e<=3){L.e=d;L.ds.push(d)}else g.push({s:d,e:d,n:i.name,ds:[d]})});
+ const mn=new Date(y,mo-1,1).toLocaleDateString(undefined,{month:'short'});
+ const lines=g.map(x=>{const ok=x.ds.every(marked);return `<div style="margin:3px 0">${ok?'<span class="ok">✓</span>':'<span style="color:#b36b00">⚠</span>'} <b>${mn} ${x.s===x.e?x.s:x.s+'–'+x.e}</b> · ${esc(x.n)}${ok?'':' <span class="sub" style="margin:0">(not marked yet)</span>'}</div>`}).join('');
+ return `<div class="card noprint"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><div style="flex:1;min-width:230px"><b>Philippine school calendar</b><div class="sub" style="margin:2px 0 0">DepEd SY 2026–2027 (DepEd Order No. 009, s. 2026): opens ${fmtDate(P.open)}, closes ${fmtDate(P.close)}, year-end break Dec 19 – Jan 3. National holidays from Proclamation Nos. 1006 and 1427.</div></div><button class="btn y" onclick="applyCal(false)">Mark official no-class days · this class</button><button class="btn" onclick="applyCal(true)">All classes</button></div><div style="margin-top:8px">${inSY?(lines||'<div class="sub" style="margin:0">No official non-class weekdays this month.</div>'):'<div class="sub" style="margin:0">This month is outside SY 2026–2027.</div>'}</div><div class="sub" style="margin:8px 0 0">Not included: local holidays, weather or other class suspensions, and Eid'l Fitr / Eid'l Adha (their dates are set by separate proclamations). Mark those in the <b>Class?</b> row.</div></div>`}
 
 /* --- camera scanner (html5-qrcode, loaded only when needed; put a copy in /vendor to work offline) --- */
 const SCANLIB=['vendor/html5-qrcode.min.js','https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js','https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'];
@@ -377,7 +400,7 @@ async function switchCam(id){await stopScan(true);startScan(id)}
 async function listCams(){try{const d=(await navigator.mediaDevices.enumerateDevices()).filter(x=>x.kind==='videoinput'),s=$('#camSel');if(!s)return;if(d.length<2){s.hidden=true;return}let cur='';try{cur=(scan.stream?scan.stream.getVideoTracks()[0].getSettings():scan.inst.getRunningTrackSettings()).deviceId||''}catch(e){}s.innerHTML=d.map((x,i)=>`<option value="${esc(x.deviceId)}" ${x.deviceId===cur?'selected':''}>${esc(x.label||'Camera '+(i+1))}</option>`).join('');s.hidden=false}catch(e){}}
 function flash(msg,k){scanMsg(msg,k);if(k==='ok'){toast(msg);try{navigator.vibrate&&navigator.vibrate(80)}catch(e){}}}
 function onScan(text){const now=Date.now();if(scan.busy)return;if(text===scan.last&&now-scan.lastT<4000){scan.lastT=now;return}scan.last=text;scan.lastT=now;handleScan(String(text).trim())}
-function handleScan(t){const c=C();if(!c)return;const i=dayInfo(c,attDate);
+function handleScan(t){if(SHARE)return shareScan(t);const c=C();if(!c)return;const i=dayInfo(c,attDate);
  if(!i.ok)return flash('Pick a school day with class before scanning. Nothing was recorded.','bad');
  if(!TOKRE.test(t))return flash('That is not a student QR code from this app. Nothing was recorded.','bad');
  const hit=findTok(t);if(!hit)return flash('QR code not recognized. It may have been replaced by a new one. Nothing was recorded.','bad');
@@ -387,9 +410,252 @@ function handleScan(t){const c=C();if(!c)return;const i=dayInfo(c,attDate);
  if(!cur){setSt(c,l,attDate,'p');paintAtt();hl(l.id);return flash(fullName(l)+' marked Present.','ok')}
  scan.busy=true;scan.pending={cid:c.id,lid:l.id,date:attDate};
  openModal(`<h3 style="margin-top:0">Change attendance?</h3><p>${esc(fullName(l))} is already marked <b>${ST[cur][1]}</b> on ${dateLabel(attDate)}. Change it to Present?</p><div style="text-align:right"><button class="btn" onclick="closeModal()">Keep ${ST[cur][1]}</button> <button class="btn g" onclick="confirmPresent()">Change to Present</button></div>`)}
-function confirmPresent(){const p=scan.pending;closeModal();if(!p)return;const c=S.classes.find(x=>x.id===p.cid),l=c&&c.learners.find(x=>x.id===p.lid);if(!l)return;setSt(c,l,p.date,'p');if(C()&&C().id===c.id&&attDate===p.date){paintAtt();hl(l.id)}flash(fullName(l)+' changed to Present.','ok')}
+function confirmPresent(){if(SHARE)return shareConfirm();const p=scan.pending;closeModal();if(!p)return;const c=S.classes.find(x=>x.id===p.cid),l=c&&c.learners.find(x=>x.id===p.lid);if(!l)return;setSt(c,l,p.date,'p');if(C()&&C().id===c.id&&attDate===p.date){paintAtt();hl(l.id)}flash(fullName(l)+' changed to Present.','ok')}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&(scan.on||scan.starting))stopScan()});
 window.addEventListener('pagehide',()=>{if(scan.on||scan.starting)stopScan(true)});
+
+/* ===== Share link: attendance only, current day only ===== */
+const SHARE_SQL=`-- One-time setup for attendance share links. Run in Supabase: SQL Editor > New query > paste > Run.
+-- Safe to run again. It only adds new tables and functions; your "records" table is not changed.
+
+create table if not exists shares (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users on delete cascade,
+  class_id text not null,
+  token_hash text not null unique,
+  label text,
+  expires_at timestamptz not null,
+  revoked boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table shares enable row level security;
+drop policy if exists "own shares" on shares;
+create policy "own shares" on shares for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Marks made through a link. Your app merges them into your records the next time it syncs.
+create table if not exists share_marks (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users on delete cascade,
+  class_id text not null,
+  learner_id text not null,
+  day date not null,
+  status text not null check (status in ('','p','x','t','c')),
+  updated_at timestamptz not null default now(),
+  merged_at timestamptz,
+  unique (user_id, class_id, learner_id, day)
+);
+alter table share_marks enable row level security;
+drop policy if exists "own marks" on share_marks;
+create policy "own marks" on share_marks for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Internal: finds a valid, active link from its secret. Not callable from the browser.
+create or replace function _share_row(p_token text) returns shares
+language plpgsql security definer set search_path = public as $$
+declare s shares;
+begin
+  select * into s from shares
+   where token_hash = encode(sha256(convert_to(coalesce(p_token, ''), 'UTF8')), 'hex')
+     and not revoked and expires_at > now();
+  if not found then raise exception 'invalid_link'; end if;
+  return s;
+end $$;
+revoke all on function _share_row(text) from public, anon, authenticated;
+
+-- Roster for the link's class plus TODAY's status only (Philippine date). No LRN, birth date, QR or grades.
+create or replace function share_open(p_token text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  s shares; v_data jsonb; v_cls jsonb; v_att jsonb; v_closed text := null;
+  v_day date := (now() at time zone 'Asia/Manila')::date;
+  v_ym text; v_d text;
+begin
+  s := _share_row(p_token);
+  v_ym := to_char(v_day, 'YYYY-MM');
+  v_d := extract(day from v_day)::int::text;
+  select data into v_data from records where user_id = s.user_id;
+  select c into v_cls from jsonb_array_elements(coalesce(v_data->'classes', '[]'::jsonb)) c
+   where c->>'id' = s.class_id limit 1;
+  if v_cls is null then raise exception 'class_not_found'; end if;
+  v_att := coalesce(v_cls->'att'->v_ym, '{}'::jsonb);
+  if extract(isodow from v_day) in (6, 7) then v_closed := 'weekend';
+  elsif v_att->'_nc'->>v_d is not null then v_closed := 'noclass'; end if;
+  return jsonb_build_object(
+    'date', to_char(v_day, 'YYYY-MM-DD'),
+    'school', v_data->'p'->>'school',
+    'class', v_cls->>'name',
+    'closed', v_closed,
+    'learners', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id', l->>'id', 'first', l->>'first', 'last', l->>'last', 'sex', l->>'sex', 'photo', l->'photo',
+        'st', coalesce(
+          (select m.status from share_marks m
+            where m.user_id = s.user_id and m.class_id = s.class_id
+              and m.learner_id = l->>'id' and m.day = v_day and m.merged_at is null),
+          v_att->(l->>'id')->>v_d, '')
+      ) order by ord)
+      from jsonb_array_elements(coalesce(v_cls->'learners', '[]'::jsonb)) with ordinality as t(l, ord)
+    ), '[]'::jsonb)
+  );
+end $$;
+
+-- Looks up a scanned QR token inside the link's class only. Returns the student's name and today's status.
+create or replace function share_scan(p_token text, p_qr text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  s shares; v_l jsonb; v_st text;
+  v_day date := (now() at time zone 'Asia/Manila')::date;
+begin
+  s := _share_row(p_token);
+  select l into v_l from records r,
+         jsonb_array_elements(r.data->'classes') c,
+         jsonb_array_elements(c->'learners') l
+   where r.user_id = s.user_id and c->>'id' = s.class_id and l->>'qr' = p_qr limit 1;
+  if v_l is null then return jsonb_build_object('found', false); end if;
+  v_st := coalesce(
+    (select m.status from share_marks m
+      where m.user_id = s.user_id and m.class_id = s.class_id
+        and m.learner_id = v_l->>'id' and m.day = v_day and m.merged_at is null),
+    (select c->'att'->to_char(v_day, 'YYYY-MM')->(v_l->>'id')->>(extract(day from v_day)::int::text)
+       from records r, jsonb_array_elements(r.data->'classes') c
+      where r.user_id = s.user_id and c->>'id' = s.class_id limit 1),
+    '');
+  return jsonb_build_object('found', true, 'id', v_l->>'id', 'first', v_l->>'first', 'last', v_l->>'last', 'st', v_st);
+end $$;
+
+-- Records one status for TODAY only. p_day must equal today's Philippine date, so an old page cannot write to another day.
+create or replace function share_mark(p_token text, p_learner text, p_status text, p_day text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  s shares; v_ok boolean;
+  v_day date := (now() at time zone 'Asia/Manila')::date;
+  v_ym text; v_d text;
+begin
+  s := _share_row(p_token);
+  if p_status is null or p_status not in ('', 'p', 'x', 't', 'c') then raise exception 'bad_status'; end if;
+  if p_day is distinct from to_char(v_day, 'YYYY-MM-DD') then raise exception 'wrong_day'; end if;
+  if extract(isodow from v_day) in (6, 7) then raise exception 'closed'; end if;
+  v_ym := to_char(v_day, 'YYYY-MM');
+  v_d := extract(day from v_day)::int::text;
+  select exists (select 1 from records r,
+                        jsonb_array_elements(r.data->'classes') c,
+                        jsonb_array_elements(c->'learners') l
+                  where r.user_id = s.user_id and c->>'id' = s.class_id and l->>'id' = p_learner)
+    into v_ok;
+  if not v_ok then raise exception 'unknown_learner'; end if;
+  if exists (select 1 from records r, jsonb_array_elements(r.data->'classes') c
+              where r.user_id = s.user_id and c->>'id' = s.class_id
+                and c->'att'->v_ym->'_nc'->>v_d is not null) then
+    raise exception 'closed';
+  end if;
+  insert into share_marks (user_id, class_id, learner_id, day, status)
+  values (s.user_id, s.class_id, p_learner, v_day, p_status)
+  on conflict (user_id, class_id, learner_id, day)
+  do update set status = excluded.status, updated_at = now(), merged_at = null;
+  return jsonb_build_object('date', to_char(v_day, 'YYYY-MM-DD'), 'id', p_learner, 'st', p_status);
+end $$;
+
+revoke all on function share_open(text), share_scan(text, text), share_mark(text, text, text, text) from public;
+grant execute on function share_open(text), share_scan(text, text), share_mark(text, text, text, text) to anon, authenticated;
+`;
+
+/* --- the page a person sees when they open a share link --- */
+const SHERR={invalid_link:'This link is no longer valid. Ask your teacher for a new one.',class_not_found:'This class is no longer available. Ask your teacher for a new link.',closed:'There is no class today, so attendance cannot be recorded.',unknown_learner:'That student is not in this class.',bad_status:'That status is not allowed.',wrong_day:'A new day has started. Showing today\u2019s attendance now.'};
+let shareStat='loading',shareMsg='',shareFatal=false,shareStarted=0,shareSeq=0;
+async function shareRpc(fn,body){
+ let r;try{r=await fetch(SHARE.u+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:SHARE.k,Authorization:'Bearer '+SHARE.k,'Content-Type':'application/json'},body:JSON.stringify({p_token:SHARE.t,...body})})}
+ catch(e){const x=new Error('No connection. Nothing was saved.');x.code='offline';throw x}
+ let j=null;try{j=await r.json()}catch(e){}
+ if(!r.ok){const m=(j&&(j.message||j.msg))||'';const x=new Error(SHERR[m]||'Could not reach the server ('+r.status+'). Try again.');x.code=m;throw x}
+ return j}
+function shareCard(t,m,extra){return `<div class="card"><h3 style="margin-top:0">${esc(t)}</h3><p>${esc(m)}</p>${extra||''}</div>`}
+async function shareLoad(quiet){
+ const my=++shareSeq;
+ try{const j=await shareRpc('share_open',{});
+  if(quiet&&my!==shareSeq)return;
+  const ym=j.date.slice(0,7),d=+j.date.slice(8,10),A={},L=j.learners||[];
+  L.forEach(l=>{if(l.st)A[l.id]={[d]:l.st}});if(j.closed==='noclass')A._nc={[d]:1};
+  const old=attDate;
+  S={saved:null,cur:'share',p:{school:j.school||''},classes:[{id:'share',name:j.class||'Class',grade:'',mode:'num',shs:false,subj:[],rec:{},books:[],ns:[],att:{[ym]:A},
+   learners:L.map(l=>({id:l.id,first:l.first||'',last:l.last||'',sex:l.sex==='F'?'F':'M',photo:PHOTO_OK.test(l.photo||'')?l.photo:undefined}))}]};
+  attDate=j.date;month=ym;shareStat='ok';
+  if(quiet&&old===j.date&&$('#attCards'))paintAtt();else shareRender()
+ }catch(e){if(quiet&&e.code!=='invalid_link'&&e.code!=='class_not_found')return;shareStat='error';shareMsg=e.message;shareFatal=e.code==='invalid_link'||e.code==='class_not_found';shareRender()}}
+function shareRender(){
+ if(scan.on||scan.starting)stopScan(true);
+ document.body.classList.add('share');const as=document.querySelector('aside');if(as)as.style.display='none';document.title='Attendance';
+ const m=$('main');if(!m)return;
+ if(SHARE.bad){m.innerHTML=shareCard('This link is not valid','The address looks incomplete. Ask your teacher to send the link again.');return}
+ if(shareStat==='loading'){m.innerHTML='<div class="card">Loading attendance…</div>';if(!shareStarted){shareStarted=1;shareLoad()}return}
+ if(shareStat==='error'){m.innerHTML=shareCard('Cannot open attendance',shareMsg,shareFatal?'':'<button class="btn y" onclick="shareStat=\'loading\';shareStarted=0;shareRender()">Try again</button>');return}
+ if(attMode==='grid')attMode='photo';
+ const c=C();
+ m.innerHTML=`<div class="card noprint" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:200px"><div class="sub" style="margin:0">${esc(S.p.school||'')}</div><h2 style="margin:2px 0">${esc(c.name)}</h2><div class="sub" style="margin:0">Attendance link · today only</div></div><button class="btn" onclick="shareLoad()">↻ Refresh</button></div>
+ <div class="tabs noprint" role="tablist" aria-label="Attendance mode">${[['photo','Photo cards'],['scan','Scan QR']].map(t=>`<button role="tab" aria-selected="${attMode===t[0]}" class="tab ${attMode===t[0]?'on':''}" onclick="setAttMode('${t[0]}')">${t[1]}</button>`).join('')}</div>`
+ +(attMode==='scan'?scanPanel():'')+`<div class="card"><div id="attSum">${sumHTML()}</div><div id="attCards" class="pgrid" style="margin-top:12px">${cardsHTML()}</div></div><p class="sub">This link records today's attendance for this class only. Past days and other parts of the app are not available here.</p>`}
+function shareApply(j){shareSeq++;const c=C(),ym=j.date.slice(0,7),d=+j.date.slice(8,10),A=(c.att[ym]||={}),a=(A[j.id]||={});if(j.st)a[d]=j.st;else delete a[d];if(!Object.keys(a).length)delete A[j.id]}
+function shareFail(e){if(e.code==='wrong_day'){shareLoad();return flash(e.message,'warn')}flash(e.message,'bad')}
+async function sharePick(id,v){const c=C(),l=findL(id);if(!l)return;if(!dayInfo(c,attDate).ok)return toast('There is no class today');
+ const nv=getSt(c,l,attDate)===v?'':v;
+ try{const j=await shareRpc('share_mark',{p_learner:id,p_status:nv,p_day:attDate});shareApply(j);paintAtt();const b=document.querySelector('.pc[data-id="'+id+'"] .b'+v);if(b)b.focus();toast(nv?fullName(l)+' marked '+ST[nv][1]:fullName(l)+' cleared (not recorded)')}
+ catch(e){toast(e.message);if(e.code==='wrong_day')shareLoad()}}
+async function shareScan(t){
+ if(!TOKRE.test(t))return flash('That is not a student QR code from this app. Nothing was recorded.','bad');
+ scan.busy=true;let keep=false;
+ try{const r=await shareRpc('share_scan',{p_qr:t});
+  if(!r.found)return flash('QR code not recognized for this class. Nothing was recorded.','bad');
+  const l={id:r.id,first:r.first||'',last:r.last||''},nm=fullName(l),cur=r.st||'';
+  if(cur==='p')return flash(nm+' is already marked Present for this attendance session.','warn');
+  if(!cur){const j=await shareRpc('share_mark',{p_learner:r.id,p_status:'p',p_day:attDate});shareApply(j);paintAtt();hl(r.id);return flash(nm+' marked Present.','ok')}
+  keep=true;scan.pending={lid:r.id,date:attDate,name:nm};
+  openModal(`<h3 style="margin-top:0">Change attendance?</h3><p>${esc(nm)} is already marked <b>${ST[cur][1]}</b> on ${dateLabel(attDate)}. Change it to Present?</p><div style="text-align:right"><button class="btn" onclick="closeModal()">Keep ${ST[cur][1]}</button> <button class="btn g" onclick="confirmPresent()">Change to Present</button></div>`)
+ }catch(e){shareFail(e)}finally{if(!keep)scan.busy=false}}
+async function shareConfirm(){const p=scan.pending;closeModal();if(!p)return;
+ try{const j=await shareRpc('share_mark',{p_learner:p.lid,p_status:'p',p_day:p.date});shareApply(j);paintAtt();hl(p.lid);flash(p.name+' changed to Present.','ok')}catch(e){shareFail(e)}}
+if(SHARE){document.addEventListener('visibilitychange',()=>{if(!document.hidden&&shareStat==='ok')shareLoad(true)});setInterval(()=>{if(!document.hidden&&shareStat==='ok'&&!scan.busy&&!$('#modal.on'))shareLoad(true)},30000)}
+
+/* --- owner side: create / turn off links, and merge marks made through links --- */
+const b64u=s=>btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+async function sha256hex(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('')}
+function randTok(){const b=new Uint8Array(24);crypto.getRandomValues(b);return b64u(String.fromCharCode(...b))}
+async function copyText(t){try{await navigator.clipboard.writeText(t);toast('Copied ✓')}catch(e){const el=document.createElement('textarea');el.value=t;document.body.appendChild(el);el.select();try{document.execCommand('copy');toast('Copied ✓')}catch(x){toast('Press and hold the text to copy it')}el.remove()}}
+let shareLink='',shareLinks=null,shareErr='';
+function shareHTML(c){const on=!!CF.tok;
+ const head=`<h3 style="margin-top:0">Share attendance link</h3><p class="sub" style="margin-top:0">Anyone with the link can mark <b>today's</b> attendance for <b>${esc(c.name)}</b> using Photo cards and Scan QR. They cannot open past days, grades, LRN, birth dates or any other part of the app.</p>`;
+ const sql=`<details style="margin-top:12px"><summary>One-time setup (Supabase SQL)</summary><p class="sub">Run this once in your Supabase project: SQL Editor, paste, Run. Then create the link.</p><button class="btn" onclick="copyText(SHARE_SQL)">Copy SQL</button><pre style="max-height:200px;overflow:auto;background:#f1f4fb;padding:8px;border-radius:8px;font-size:11px">${esc(SHARE_SQL)}</pre></details>`;
+ if(!on)return head+`<div class="smsg warn">Links need cloud sync, because the other person's phone has no copy of your records. Sign in under Settings &amp; Profile → Cloud sync, then come back here.</div><div style="margin-top:10px"><button class="btn y" onclick="closeModal();go('set')">Open Cloud sync</button> <button class="btn" onclick="closeModal()">Close</button></div>`+sql;
+ const list=shareLinks===null?'<div class="sub">Loading…</div>':shareErr?`<div class="smsg bad">${esc(shareErr)}</div>`:!shareLinks.length?'<div class="sub">No links yet.</div>':shareLinks.map(x=>{const ex=new Date(x.expires_at),act=!x.revoked&&ex>new Date();return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><span style="flex:1;min-width:180px">Created ${new Date(x.created_at).toLocaleDateString()} · ${x.revoked?'turned off':act?(ex.getFullYear()>new Date().getFullYear()+5?'active, no expiry':'active until '+ex.toLocaleDateString()):'expired'}</span>${act?`<button class="btn r" onclick="shareRevoke('${x.id}')">Turn off</button>`:''}</div>`}).join('');
+ return head+`<div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap"><label style="width:200px">Link lasts for<select id="shExp"><option value="1">1 day</option><option value="7" selected>7 days</option><option value="30">30 days</option><option value="3650">Until I turn it off</option></select></label><button class="btn g" onclick="shareCreate()">Create link</button></div>`
+ +(shareLink?`<div class="smsg ok" style="margin-top:10px">Link created. Send it only to people who should take attendance.<input readonly value="${esc(shareLink)}" onclick="this.select()" style="margin-top:6px"><div style="margin-top:6px"><button class="btn d" onclick="copyText(shareLink)">Copy link</button> ${navigator.share?'<button class="btn" onclick="shareNative()">Share…</button>':''}</div></div>`:'')
+ +(shareErr&&!shareLinks?`<div class="smsg bad" style="margin-top:10px">${esc(shareErr)}</div>`:'')
+ +`<h4 style="margin:14px 0 4px">Links for this class</h4>${list}`+sql+`<div style="text-align:right;margin-top:12px"><button class="btn" onclick="closeModal()">Close</button></div>`}
+function shareNative(){navigator.share({title:'Attendance link',text:'Attendance for '+(C()?C().name:'my class')+' (today only)',url:shareLink}).catch(()=>{})}
+function shareRepaint(){const e=$('#shm');if(e&&C())e.innerHTML=shareHTML(C())}
+function openShare(){const c=C();if(!c)return;shareLink='';shareLinks=null;shareErr='';openModal('<div id="shm">'+shareHTML(c)+'</div>');if(CF.tok)shareRefresh()}
+async function shareRefresh(){try{const t=await token(),c=C(),r=await fetch(base()+'/rest/v1/shares?select=id,created_at,expires_at,revoked&class_id=eq.'+encodeURIComponent(c.id)+'&order=created_at.desc',{headers:sbH(t)});
+ if(!r.ok){shareLinks=[];shareErr=r.status===404?'The sharing tables are not set up yet. Run the one-time setup SQL below, then reopen this window.':'Could not load your links ('+r.status+').'}else{shareLinks=await r.json();shareErr=''}}catch(e){shareLinks=[];shareErr=e.message}shareRepaint()}
+async function shareCreate(){const c=C();
+ if(!/^https?:$/.test(location.protocol))return toast('Open the app from your Netlify address to create a link');
+ const days=+$('#shExp').value;shareErr='';shareLink='';
+ try{toast('Syncing your records first…');await cloudSync(true);
+  const raw=randTok(),hash=await sha256hex(raw),t=await token();
+  const r=await fetch(base()+'/rest/v1/shares',{method:'POST',headers:{...sbH(t),Prefer:'return=representation'},body:JSON.stringify({user_id:CF.uid,class_id:c.id,token_hash:hash,label:c.name,expires_at:new Date(Date.now()+days*864e5).toISOString()})});
+  if(!r.ok){shareErr=r.status===404?'The sharing tables are not set up yet. Run the one-time setup SQL below, then try again.':'Could not create the link ('+r.status+').';shareLinks=shareLinks||[];return shareRepaint()}
+  shareLink=location.origin+location.pathname+'#a='+b64u(JSON.stringify({u:base(),k:CF.key,t:raw}));CF.shareOn=true;cfSave();await shareRefresh()
+ }catch(e){shareErr=e.message;shareLinks=shareLinks||[];shareRepaint()}}
+async function shareRevoke(id){if(!confirm('Turn off this link? Anyone using it will lose access right away.'))return;
+ try{const t=await token(),r=await fetch(base()+'/rest/v1/shares?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:sbH(t),body:JSON.stringify({revoked:true})});if(!r.ok)throw new Error('Could not turn off the link ('+r.status+')');toast('Link turned off');await shareRefresh()}catch(e){toast(e.message)}}
+async function pullShared(){
+ if(SHARE||!CF.tok||!CF.shareOn||pullShared.busy)return 0;pullShared.busy=1;
+ try{const t=await token(),r=await fetch(base()+'/rest/v1/share_marks?select=id,class_id,learner_id,day,status&merged_at=is.null&order=updated_at.asc&limit=1000',{headers:sbH(t)});
+  if(!r.ok)return 0;const rows=await r.json();if(!rows.length)return 0;
+  let n=0;rows.forEach(m=>{const c=S.classes.find(x=>x.id===m.class_id),l=c&&c.learners.find(x=>x.id===m.learner_id);if(!l||!/^\d{4}-\d{2}-\d{2}$/.test(m.day))return;
+   const A=(c.att[m.day.slice(0,7)]||={}),a=(A[l.id]||={}),d=+m.day.slice(8,10);if(m.status)a[d]=m.status;else delete a[d];if(!Object.keys(a).length)delete A[l.id];n++});
+  if(n){save();await push(t,base()+'/rest/v1/records')}
+  const ids=rows.map(m=>m.id);for(let i=0;i<ids.length;i+=100){await fetch(base()+'/rest/v1/share_marks?id=in.('+ids.slice(i,i+100).join(',')+')',{method:'PATCH',headers:sbH(t),body:JSON.stringify({merged_at:new Date().toISOString()})})}
+  return n}catch(e){return 0}finally{pullShared.busy=0}}
+setInterval(async()=>{if(SHARE||document.hidden||!CF.tok||!CF.shareOn||view!=='att')return;const n=await pullShared();if(n){attMode==='grid'?render():paintAtt()}},20000);
 window.addEventListener('beforeunload',e=>{if(dirty){save()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&CF.tok&&!dirty)cloudSync()});if(CF.tok)cloudSync();
 render();
