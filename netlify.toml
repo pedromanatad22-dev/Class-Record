@@ -1,0 +1,11 @@
+# Optional. Put this file in the same GitHub folder as index.html.
+# It makes sure browsers always check for a newer index.html instead of reusing an old copy.
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
