@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="app-version" content="2026.11.25-1"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="app-version" content="2026.11.25-4"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Auto E-Class Record 2026</title>
 <style>
 :root{--navy:#0f1f3d;--yel:#f6c23e;--grn:#1fa971;--red:#d6394a;--bg:#f4f6fb;--line:#e3e7f0;--mut:#6b7590}
@@ -231,7 +231,7 @@ $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
 function render(){
  if(SHARE)return shareRender();if(typeof pgRefresh==='function')pgRefresh();if(scan.on||scan.starting)stopScan(true);if(ensureQR())commit();
  const nav=[['dash','Dashboard',''],['h','Teacher forms'],['learners','Learners','SF1'],['record','Class Record','ECR'],['att','Attendance','SF2'],['books','Books','SF3'],['ecrx','Class Grades Record','DepEd'],['topx','Top Students & Certificates','New'],['hb','School Handbook',''],['h','School head forms'],['soon','Promotion · Health · Report Cards','SF5-10'],['set','Settings & Profile','']];
- $('#side').innerHTML=`<div class="logo"><i>SF</i><div>E-Class Record<small>SF1–SF10 · ${esc(S.p.year)}</small></div></div>`+nav.map(n=>n[0]==='h'?`<h6>${n[1]}</h6>`:`<div class="nav ${view===n[0]?'on':''}" onclick="${n[0]==='soon'?"toast('Not included in this version')":`go('${n[0]}')`}"><span>${n[1]}</span>${n[2]?`<b>${n[2]}</b>`:''}</div>`).join('')+`<p style="font-size:11px;color:#7d8db3;margin:16px 6px">Auto-saves every change on this device. Back up weekly in Settings.<br><span id="verTag">Version 2026.11.25-1 · <a href="#" style="color:inherit" onclick="updCheck(true);return false">Check for updates</a></span></p>`;
+ $('#side').innerHTML=`<div class="logo"><i>SF</i><div>E-Class Record<small>SF1–SF10 · ${esc(S.p.year)}</small></div></div>`+nav.map(n=>n[0]==='h'?`<h6>${n[1]}</h6>`:`<div class="nav ${view===n[0]?'on':''}" onclick="${n[0]==='soon'?"toast('Not included in this version')":`go('${n[0]}')`}"><span>${n[1]}</span>${n[2]?`<b>${n[2]}</b>`:''}</div>`).join('')+`<p style="font-size:11px;color:#7d8db3;margin:16px 6px">Auto-saves every change on this device. Back up weekly in Settings.<br><span id="verTag">Version 2026.11.25-4 · <a href="#" style="color:inherit" onclick="updCheck(true);return false">Check for updates</a></span></p>`;
  const c=C(),titles={dash:'Dashboard',learners:'Learners',record:'Class Record',att:'Attendance',books:'Books',ecrx:'Class Grades Record (DepEd ECR)',topx:'Top Students & Certificates',hb:'School Handbook',set:'Settings & Profile'};
  const sel=`<select onchange="S.cur=this.value;commit();render()">${S.classes.map(k=>`<option value="${k.id}" ${k.id===S.cur?'selected':''}>${esc(k.name)}</option>`).join('')||'<option>No class yet</option>'}</select>`;
  let body=''; if(!c&&view!=='set'&&view!=='dash'&&view!=='hb')body=`<div class="card">Create a class first.<br><br><button class="btn y" onclick="newClass()">+ New class</button></div>`;
@@ -297,7 +297,7 @@ function calc(H,S,w){const hw=sm(H.ww),hp=sm(H.pt),tw=sm(S.ww),tp=sm(S.pt),pw=ps
 let qt=1;const SB=()=>C().ns[Math.min(tab,C().ns.length-1)],QD=(s,q)=>s.q[q]||={h:{ww:[],pt:[],qa:''},s:{}},SD=(d,id)=>d.s[id]||={ww:[],pt:[],qa:''};
 function numRec(){const c=C(),sb=SB(),g=sorted(c),L=[...g.M,...g.F];
  const tabs=`<div class="tabs noprint">${c.ns.map((x,i)=>`<span class="tab ${i===tab?'on':''}" onclick="tab=${i};render()">${esc(x.n)} <b title="Rename subject" onclick="event.stopPropagation();renSubj(${i})">✎</b><b title="Remove subject" onclick="event.stopPropagation();delSubj(${i})">×</b></span>`).join('')}<span class="tab" onclick="subjDlg(-1)">+ Subject</span></div><div class="tabs noprint">${[1,2,3,4].map(q=>`<span class="tab t2 ${q===qt?'on':''}" onclick="qt=${q};render()">${['1st','2nd','3rd','4th'][q-1]} Quarter</span>`).join('')}<span class="tab t2 ${qt===5?'on':''}" onclick="qt=5;render()">Final grades</span></div>`;
- const head=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div><span class="tag">ECR</span><h2 style="margin:2px 0">${esc(sb.n)}</h2><div class="sub" style="margin:0">${[['Written Works',0],['Performance Tasks',1],['Quarterly Assessment',2]].map(([n,k])=>`${n} <input class="wi" type="number" min="0" max="100" value="${sb.w[k]}" onchange="setW(${k},this.value)">%`).join(' · ')} ${sb.w[0]+sb.w[1]+sb.w[2]===100?'':'<b class="x">Total must be 100%</b>'} <button class="btn noprint" onclick="applyW()">Apply to all subjects in this class</button></div></div><span class="right noprint"><button class="btn g" onclick="xiOpen()" title="Upload a DepEd Class Record Excel and copy scores to matching learners">⬆ Upload Excel scores</button><button class="btn" onclick="subjDlg(-1)">+ Subject</button><button class="btn" onclick="subjDlg(${tab})">Rename / weights</button><button class="btn" onclick="C().mode='desc';commit();render()">Use descriptive grading</button><button class="btn d" onclick="window.print()">Print / Export</button></span></div>`;
+ const head=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div><span class="tag">ECR</span><h2 style="margin:2px 0">${esc(sb.n)}</h2><div class="sub" style="margin:0">${[['Written Works',0],['Performance Tasks',1],['Quarterly Assessment',2]].map(([n,k])=>`${n} <input class="wi" type="number" min="0" max="100" value="${sb.w[k]}" onchange="setW(${k},this.value)">%`).join(' · ')} ${sb.w[0]+sb.w[1]+sb.w[2]===100?'':'<b class="x">Total must be 100%</b>'} <button class="btn noprint" onclick="applyW()">Apply to all subjects in this class</button></div></div><span class="right noprint"><button class="btn g" onclick="xiOpen()" title="Upload a DepEd Class Record Excel and copy scores to matching learners">⬆ Upload Excel scores</button><button class="btn g" onclick="xpOpen()" title="Copy cells from Excel and paste them here to record Written Works, Performance Tasks and Quarterly Assessment">📋 Paste Grades from Excel</button><button class="btn" onclick="subjDlg(-1)">+ Subject</button><button class="btn" onclick="subjDlg(${tab})">Rename / weights</button><button class="btn" onclick="C().mode='desc';commit();render()">Use descriptive grading</button><button class="btn d" onclick="window.print()">Print / Export</button></span></div>`;
  if(qt===5)return `<div class="card">${head}${tabs}${finals(c,sb,L)}</div>`;
  const d=QD(sb,qt),H=d.h,ip=(k,i,v,r)=>`<td><input class="sc" inputmode="decimal" data-r="${r}" data-c="${k==='ww'?i:k==='pt'?10+i:20}" data-k="${k}" data-i="${i}" value="${esc(v??'')}" oninput="scIn(this)" onkeydown="scKey(event)" onpaste="scPaste(event)"></td>`;
  const rp=(k,r,A)=>Array.from({length:10},(_,i)=>ip(k,i,A[k][i],r)).join(''),cc=f=>`<td data-f="${f}"></td>`,ths=n=>Array.from({length:n},(_,i)=>`<th>${i+1}</th>`).join('');
@@ -1755,7 +1755,7 @@ function topView(){tcFonts();tcMigrate();if(!tc.cid||!S.classes.some(c=>c.id===t
 /* ===== Version and update check =====
    When a newer index.html is uploaded to the website, devices that still hold the old copy are told to reload. Saved records
    live in the browser for the site address and are not touched by an update. */
-const APP_VERSION='2026.11.25-1';
+const APP_VERSION='2026.11.25-4';
 async function updFetchVersion(){try{const url=location.href.split('#')[0].split('?')[0],r=await fetch(url,{cache:'no-store',headers:{Range:'bytes=0-3999'}});if(!r.ok)return null;
  let txt='';if(r.body&&r.body.getReader){const rd=r.body.getReader(),x=await rd.read();txt=new TextDecoder().decode(x.value||new Uint8Array());try{rd.cancel()}catch(e){}}else txt=(await r.text()).slice(0,4000);
  const m=/<meta name="app-version" content="([^"]+)"/.exec(txt);return m?m[1]:null}catch(e){return null}}
@@ -1905,7 +1905,7 @@ function pwEyes(){document.querySelectorAll('input[type=password]:not([data-eye]
  b.onclick=()=>{const show=i.type==='password',keep=document.activeElement===i,a=i.selectionStart,z=i.selectionEnd;i.type=show?'text':'password';const back=()=>{if(keep&&document.activeElement===i){try{i.setSelectionRange(a,z)}catch(x){}}};back();setTimeout(back,0);requestAnimationFrame(back);b.setAttribute('aria-pressed',String(show));b.setAttribute('aria-label',show?'Hide password':'Show password');b.title=show?'Hide password':'Show password';b.innerHTML=show?PW_EYE_OFF:PW_EYE};
  w.appendChild(b)})}
 try{new MutationObserver(()=>pwEyes()).observe(document.body,{childList:true,subtree:true});pwEyes()}catch(e){}
-window.addEventListener('beforeunload',e=>{if(dirty){save()}});
+window.addEventListener('beforeunload',e=>{if(dirty){save()}});window.addEventListener('pagehide',()=>{if(dirty)save()});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&CF.tok&&!dirty)cloudSync()});if(CF.tok)cloudSync();
 render();
 
@@ -1914,7 +1914,7 @@ render();
    and copies Written Works, Performance Tasks and Quarterly Assessment ONLY for the matched learners. Each score
    is taken from the same row as the name it belongs to, and the Excel's own Quarterly Grade is compared with the
    grade the app works out, so you can see the scores landed on the right learner. */
-const XI={d:null,plan:[],o:{hps:true,ow:true,w:true},undo:null};
+const XI={d:null,plan:[],o:{hps:true,ow:false,w:false},undo:null};
 const xiNorm=s=>String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9, ]+/g,' ').replace(/\s+/g,' ').trim();
 const xiToks=s=>xiNorm(s).split(/[ ,]+/).filter(x=>x.length>1);
 const xiKey=s=>xiToks(s).join('').split('').sort().join('');
@@ -1939,13 +1939,14 @@ async function xiRead(file){await ecrJSZip();const z=await JSZip.loadAsync(await
  const rel=await f('xl/_rels/workbook.xml.rels'),sh=xiShared(await f('xl/sharedStrings.xml')),rid={};
  rel.replace(/<Relationship\b([^>]*)>/g,(a,at)=>{const i=/\bId="([^"]+)"/.exec(at),t=/\bTarget="([^"]+)"/.exec(at);if(i&&t)rid[i[1]]=t[1];return''});
  const sheets=[];wbx.replace(/<sheet\b([^>]*)>/g,(a,at)=>{const n=/\bname="([^"]*)"/.exec(at),i=/\br:id="([^"]+)"/.exec(at);if(n&&i&&rid[i[1]])sheets.push({name:xiDec(n[1]),p:rid[i[1]].replace(/^\//,'').replace(/^(?!xl\/)/,'xl/')});return''});
- const qs=[],cells={},skipped=[];
+ const qs=[],cells={},skipped=[],layoutBad=[];
  for(const s of sheets){const q=xiQ(s.name);if(!q){skipped.push(s.name);continue}const xml=await f(s.p);if(!xml)continue;const M=xiCells(xml,sh);
-  if(!/WRITTEN/i.test(String(M.get(9*100+7)||''))){skipped.push(s.name);continue}cells[q]=M;qs.push(q)}
+  if(!/WRITTEN/i.test(String(M.get(9*100+7)||''))){skipped.push(s.name);continue}
+  if(!/PERFORMANCE/i.test(String(M.get(9*100+20)||''))||!/QUARTERLY/i.test(String(M.get(9*100+33)||''))){layoutBad.push(s.name);continue}cells[q]=M;qs.push(q)}
  if(!qs.length)throw new Error('No "1st Quarter" … "4th Quarter" sheets in the Class Record layout were found in this file.');
- qs.sort();const g=(q,r,c)=>{const v=cells[q].get(r*100+c);return v===undefined?null:v},num=(q,r,c)=>{const v=g(q,r,c);return typeof v==='number'?v:null};
+ qs.sort();const g=(q,r,c)=>{const v=cells[q].get(r*100+c);return v===undefined?null:v},num=(q,r,c)=>{const v=g(q,r,c);if(typeof v==='number')return isFinite(v)&&v>=0?v:null;if(typeof v==='string'){const t=v.replace(/[\s\u00a0]/g,'').replace(/,(?=\d{1,2}$)/,'.').replace(/,/g,'');return /^\d+(\.\d+)?$/.test(t)?+t:null}return null};
  const rows=[];for(let r=14;r<=63;r++)rows.push([r,'M']);for(let r=67;r<=116;r++)rows.push([r,'F']);
- const roster=[],warns=[],byRow=new Map();
+ const roster=[],warns=layoutBad.map(n=>'The sheet "'+n+'" was skipped: its Performance Tasks / Quarterly Assessment headings are not where the Class Record template has them, so its scores could not be assigned safely.'),byRow=new Map();
  for(const q of qs)for(const[r,sex]of rows){const nm=String(g(q,r,3)||'').trim();if(nm&&!xiPh(nm)&&!byRow.has(r)){const o={r,sex,name:nm,lrn:String(g(q,r,2)||'').replace(/\.0+$/,''),q:{}};byRow.set(r,o);roster.push(o)}}
  const d={file:file.name,qs,q:{},roster,warns,skipped,hdr:{}};
  for(const q of qs){const arr=(c0)=>Array.from({length:10},(_,i)=>num(q,11,c0+i));
@@ -1965,15 +1966,15 @@ function xiFind(x,L){let best=0,hits=[];const xt=xiToks(x.name),xk=xiKey(x.name)
   else if(lt.length&&xt.length){const sm=lt.length<=xt.length?lt:xt,lg=sm===lt?xt:lt;if(sm.length>=2&&sm.every(t=>lg.includes(t)))k=2}
   if(k>best){best=k;hits=[l]}else if(k&&k===best)hits.push(l)}
  if(hits.length>1){const s=hits.filter(l=>l.sex===x.sex);if(s.length)hits=s}
- return hits.length===1?{l:hits[0],k:best}:best?{amb:true}:null}
+ return hits.length===1?{l:hits[0],k:best}:best?{amb:true,cands:hits}:null}
 function xiBuild(){const d=XI.d,P=[],secT=xiToks(d.hdr.section||'');
  for(const c of S.classes){
   if(c.mode!=='num'||!c.ns||!c.ns.length){P.push({c,skip:'uses descriptive grading (no scores to copy into)'});continue}
   let ms=[],amb=[];
-  for(const x of d.roster){const r=xiFind(x,c.learners||[]);if(!r)continue;if(r.amb)amb.push(x);else ms.push({x,l:r.l,k:r.k})}
+  for(const x of d.roster){const r=xiFind(x,c.learners||[]);if(!r)continue;if(r.amb)amb.push({x,cands:r.cands});else ms.push({x,l:r.l,k:r.k})}
   const use={};ms.forEach(m=>(use[m.l.id]||(use[m.l.id]=[])).push(m));
-  ms=ms.filter(m=>{const g=use[m.l.id];if(g.length===1)return true;const top=Math.max(...g.map(z=>z.k));const w=g.filter(z=>z.k===top);if(w.length===1&&w[0]===m)return true;if(!w.includes(m)||w.length>1)amb.push(m.x);return false});
-  ms.sort((a,b)=>a.x.r-b.x.r);ms.forEach(m=>m.on=m.k>=3);
+  ms=ms.filter(m=>{const g=use[m.l.id];if(g.length===1)return true;const top=Math.max(...g.map(z=>z.k));const w=g.filter(z=>z.k===top);if(w.length===1&&w[0]===m)return true;if(!w.includes(m)||w.length>1)amb.push({x:m.x,cands:[m.l]});return false});
+  ms.sort((a,b)=>a.x.r-b.x.r);ms.forEach(m=>{m.sur=false;if(m.k===2&&m.x.name.indexOf(',')>0){const i=m.x.name.indexOf(','),sn=xiToks(m.x.name.slice(0,i)),xt=xiToks(m.x.name),lt=xiToks((m.l.last||'')+' '+(m.l.first||''));m.sur=sn.length>0&&lt.length>=2&&sn.every(z=>lt.includes(z))&&(lt.every(z=>xt.includes(z))||xt.every(z=>lt.includes(z)))}m.on=m.k>=3||m.sur});
   const ct=xiToks(c.name),secHit=!!secT.length&&ct.length>0&&ct.every(t=>secT.includes(t));
   let sub=0;const sn=xiNorm(d.hdr.subject||'');
   if(sn){const i=c.ns.findIndex(s=>{const n=xiNorm(s.n);return n&&(n===sn||n.includes(sn)||sn.includes(n))});if(i>=0)sub=i;else sub=c.id===S.cur?Math.min(tab,c.ns.length-1):0;}
@@ -1981,22 +1982,30 @@ function xiBuild(){const d=XI.d,P=[],secT=xiToks(d.hdr.section||'');
   const exact=!!sn&&c.ns.some(s=>{const n=xiNorm(s.n);return n&&(n===sn||n.includes(sn)||sn.includes(n))});
   P.push({c,ms,amb,secHit,sub,subKnown:exact||!sn,on:false})}
  const any=P.some(p=>p.ms&&p.ms.length&&p.secHit);
- P.forEach(p=>{if(p.ms)p.on=p.ms.length>0&&(!any||p.secHit)});
+ P.forEach(p=>{if(p.ms)p.on=p.ms.length>0&&(any?p.secHit:p.c.id===S.cur)});
  XI.plan=P}
-function xiHps(h,ex,on){const o={ww:[],pt:[],qa:h&&h.qa!==undefined?h.qa:''};for(let i=0;i<10;i++){o.ww[i]=on&&ex.ww[i]!==null?xiS(ex.ww[i]):(h&&h.ww&&h.ww[i]!==undefined?h.ww[i]:'');o.pt[i]=on&&ex.pt[i]!==null?xiS(ex.pt[i]):(h&&h.pt&&h.pt[i]!==undefined?h.pt[i]:'')}if(on&&ex.qa!==null)o.qa=xiS(ex.qa);return o}
+function xiHps(h,ex,on,ow){const o={ww:[],pt:[],qa:h&&h.qa!==undefined?h.qa:''},cur=(a,i)=>h&&h[a]&&h[a][i]!==undefined?h[a][i]:'';for(let i=0;i<10;i++){o.ww[i]=on&&ex.ww[i]!==null&&(ow||E(cur('ww',i)))?xiS(ex.ww[i]):cur('ww',i);o.pt[i]=on&&ex.pt[i]!==null&&(ow||E(cur('pt',i)))?xiS(ex.pt[i]):cur('pt',i)}if(on&&ex.qa!==null&&(ow||E(o.qa)))o.qa=xiS(ex.qa);return o}
 function xiArr(base,ex,ow){const o=[];for(let i=0;i<10;i++){const b=base&&base[i]!==undefined?base[i]:'';o[i]=ex[i]!==null&&(ow||E(b))?xiS(ex[i]):b}return o}
 const xiW=sb=>XI.o.w&&XI.d.hdr.w?XI.d.hdr.w:(sb?sb.w:(S.p.dw||[25,50,25]));
-function xiQG(sb,m,q){const X=m.x.q[q];if(!X||!X.has)return null;const d=sb&&sb.q&&sb.q[q]?sb.q[q]:{h:{ww:[],pt:[],qa:''},s:{}},H=xiHps(d.h,XI.d.q[q].hps,XI.o.hps),A=(d.s&&d.s[m.l.id])||{ww:[],pt:[],qa:''};
+function xiQG(sb,m,q){const X=m.x.q[q];if(!X||!X.has)return null;const d=sb&&sb.q&&sb.q[q]?sb.q[q]:{h:{ww:[],pt:[],qa:''},s:{}},H=xiHps(d.h,XI.d.q[q].hps,XI.o.hps,XI.o.ow),A=(d.s&&d.s[m.l.id])||{ww:[],pt:[],qa:''};
  const Sx={ww:xiArr(A.ww,X.ww,XI.o.ow),pt:xiArr(A.pt,X.pt,XI.o.ow),qa:X.qa!==null&&(XI.o.ow||E(A.qa))?xiS(X.qa):(A.qa===undefined?'':A.qa)};return calc(H,Sx,xiW(sb)).qg}
 function xiOpen(){const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xlsm';i.onchange=()=>{if(i.files[0])xiPick(i.files[0])};i.click()}
-async function xiPick(file){try{toast('Reading '+file.name+'…',4000);XI.d=await xiRead(file);xiBuild();XI.undo=null;xiShow()}catch(e){toast('Could not read that file: '+(e&&e.message||e),7000)}}
-function xiShow(){const box=$('#mbox'),top=box.scrollTop,d=XI.d,qn=q=>['1st','2nd','3rd','4th'][q-1],o=XI.o;
- const matchedAny=XI.plan.some(p=>p.ms&&p.ms.length);
+async function xiPick(file){try{XI.mode='file';XI.o={hps:true,ow:false,w:false};toast('Reading '+file.name+'…',4000);XI.d=await xiRead(file);xiBuild();XI.undo=null;xiShow()}catch(e){toast('Could not read that file: '+(e&&e.message||e),7000)}}
+function xiShow(){if(XI.mode==='paste')return xpShow();const box=$('#mbox'),top=box.scrollTop,d=XI.d,qn=q=>['1st','2nd','3rd','4th'][q-1],o=XI.o;
+ const matchedAny=XI.plan.some(p=>p.ms&&(p.ms.length||p.amb.length)),st=xiStats();
+ const wdiff=XI.plan.filter(p=>p.on&&p.sub>=0&&p.ms&&p.ms.length).some(p=>d.hdr.w&&p.c.ns[p.sub].w.join()!==d.hdr.w.join());
+ const bx=(l,v,c)=>`<div style="border:1px solid var(--line);border-radius:10px;padding:6px 10px;${c?'color:'+c:''}"><div class="sub" style="margin:0;font-size:11px">${l}</div><b style="font-size:18px">${v}</b></div>`;
+ const sumHTML=`<div class="card" style="padding:12px;margin-bottom:10px"><b>Import summary</b> <span class="sub" style="margin:0">(updates as you tick or change things; nothing is saved until you press Import)</span>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px">${bx('Students found in Excel',st.det)}${bx('Matched to learners',st.matched,'#12795a')}${bx('Unmatched (manual review)',st.unmatched.length,st.unmatched.length?'#b02a4d':'')}${bx('Ambiguous (need your choice)',st.ambOnly.length,st.ambOnly.length?'#7a5600':'')}${bx('Grades extracted from file',st.ext)}${bx('Grades ready to be saved',st.ready,'#12795a')}${o.ow?bx('Existing grades to be replaced',st.replace,st.replace?'#b02a4d':''):bx('Existing grades kept (differ from Excel)',st.kept)}</div>
+  ${st.ext===0?'<div class="smsg bad" style="margin-top:8px"><b>This Excel has no scores in it.</b> Only names were found: every Written Works, Performance Tasks and Quarterly Assessment cell is blank, so there is nothing to import. Type the scores into the Excel, save it, and upload it again.</div>':''}
+  ${st.ext>0&&!st.ready&&st.learners?'<div class="smsg warn" style="margin-top:8px">Nothing new to save for the ticked learners: their scores are already in the app'+(st.kept?', or differ and are being kept (tick “Replace existing scores” to overwrite them)':'')+'.</div>':''}
+  ${o.ow&&st.replace?'<div class="smsg warn" style="margin-top:8px"><b>'+st.replace+' score'+(st.replace===1?'':'s')+' already in the app will be replaced.</b> You will be asked to confirm before anything is changed.</div>':''}
+  ${wdiff&&!o.w?'<div class="smsg warn" style="margin-top:8px">The Excel uses weights WW '+d.hdr.w[0]+'% · PT '+d.hdr.w[1]+'% · QA '+d.hdr.w[2]+'%, which differ from the subject in the app, so the grades below may show ⚠. Tick “Use the Excel’s weights” if you want them copied.</div>':''}</div>`;
  const used=new Set();XI.plan.forEach(p=>p.ms&&p.ms.forEach(m=>used.add(m.x.r)));
- const lost=d.roster.filter(x=>!used.has(x.r));
+ const lost=st.unmatched;
  const cards=XI.plan.map((p,pi)=>{
   if(p.skip)return `<div class="card" style="padding:10px;margin-bottom:8px;opacity:.7"><b>${esc(p.c.name)}</b> <span class="sub" style="margin:0">— ${esc(p.skip)}</span></div>`;
-  if(!p.ms.length)return `<div class="card" style="padding:10px;margin-bottom:8px;opacity:.7"><b>${esc(p.c.name)}</b> <span class="sub" style="margin:0">— no learner in this section matches a name in the Excel</span></div>`;
+  if(!p.ms.length&&!p.amb.length)return `<div class="card" style="padding:10px;margin-bottom:8px;opacity:.7"><b>${esc(p.c.name)}</b> <span class="sub" style="margin:0">— no learner in this section matches a name in the Excel</span></div>`;
   const sb=p.sub>=0?p.c.ns[p.sub]:null,opts=p.c.ns.map((s,i)=>`<option value="${i}" ${i===p.sub?'selected':''}>${esc(s.n)}</option>`).join('')+`<option value="-1" ${p.sub<0?'selected':''}>➕ New subject: ${esc(d.hdr.subject||'Subject')}</option>`;
   const rows=p.ms.map((m,mi)=>{
    const cells=d.qs.map(q=>{const X=m.x.q[q];if(!X||!X.has)return '<td style="text-align:center;color:var(--mut)">—</td>';const g=xiQG(sb,m,q);
@@ -2004,39 +2013,274 @@ function xiShow(){const box=$('#mbox'),top=box.scrollTop,d=XI.d,qn=q=>['1st','2n
     if(xg===null||xg===undefined)return `<td style="text-align:center">${txt}</td>`;
     if(g!==''&&g!==null&&Math.abs(+g-xg)<0.5)return `<td style="text-align:center"><span class="ok">✓</span> ${txt}</td>`;
     return `<td style="text-align:center;color:var(--red);font-weight:700" title="The Excel shows ${xg}, the app works out ${g===''?'no grade':g}. Check the weights, highest possible scores or the matched learner.">⚠ ${txt} <small>(Excel ${xg})</small></td>`}).join('');
-   return `<tr><td><input type="checkbox" ${m.on?'checked':''} onchange="xiTogM(${pi},${mi},this.checked)"></td><td>${esc(m.l.last)}, ${esc(m.l.first)}</td><td>${esc(m.x.name)}</td><td>${m.k===4?'LRN':m.k===3?'Exact':'<b style="color:#c98a00">Close – check</b>'}</td>${cells}</tr>`}).join('');
-  return `<div class="card" style="padding:12px;margin-bottom:10px"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><label style="display:flex;gap:6px;align-items:center;font-size:14px;color:inherit"><input type="checkbox" ${p.on?'checked':''} onchange="xiTogC(${pi},this.checked)"><b>${esc(p.c.name)}</b></label><span class="sub" style="margin:0">${p.ms.length} learner${p.ms.length===1?'':'s'} matched${p.secHit?' · section matches the file':''}</span><label style="margin-left:auto;display:flex;gap:6px;align-items:center">Copy into subject <select onchange="xiSub(${pi},this.value)">${opts}</select></label></div>
+   return `<tr><td><input type="checkbox" ${m.on?'checked':''} onchange="xiTogM(${pi},${mi},this.checked)"></td><td>${esc(m.l.last)}, ${esc(m.l.first)}</td><td>${esc(m.x.name)}</td><td>${m.k===1?'Confirmed by you':m.k===4?'LRN':m.k===3?'Exact':m.sur?'Surname + first name':'<b style="color:#c98a00">Close – check</b>'}</td>${cells}</tr>`}).join('');
+  return `<div class="card" style="padding:12px;margin-bottom:10px"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><label style="display:flex;gap:6px;align-items:center;font-size:14px;color:inherit"><input type="checkbox" ${p.on?'checked':''} onchange="xiTogC(${pi},this.checked)"><b>${esc(p.c.name)}</b></label><span class="sub" style="margin:0">${p.ms.length} learner${p.ms.length===1?'':'s'} matched${p.secHit?' · section matches the file':''}</span><a href="#" style="font-size:12px" onclick="xiAll(${pi},true);return false">Tick all</a><a href="#" style="font-size:12px" onclick="xiAll(${pi},false);return false">Untick all</a><label style="margin-left:auto;display:flex;gap:6px;align-items:center">Copy into subject <select onchange="xiSub(${pi},this.value)">${opts}</select></label></div>
    ${!p.subKnown&&p.sub>=0?`<div class="sub" style="margin:4px 0;color:#7a5600">The file's subject is “${esc(d.hdr.subject)}”, which is not one of this section's subjects. Check the subject box.</div>`:''}
    <div style="max-height:260px;overflow:auto;margin-top:8px"><table class="gt" style="font-size:12px"><tr><th></th><th style="text-align:left">Learner in app</th><th style="text-align:left">Name in Excel</th><th>Match</th>${d.qs.map(q=>`<th>${qn(q)} Qtr grade</th>`).join('')}</tr>${rows}</table></div>
-   ${p.amb.length?`<div class="sub" style="margin:6px 0 0;color:#7a5600">Skipped (more than one possible learner): ${p.amb.map(x=>esc(x.name)).join('; ')}</div>`:''}</div>`}).join('');
+   ${(()=>{const mu=new Set(p.ms.map(m=>m.l.id)),un=(p.c.learners||[]).filter(l=>!mu.has(l.id));return un.length?`<details style="margin-top:6px"><summary class="sub" style="cursor:pointer;margin:0">${un.length} learner${un.length===1?'':'s'} in this section not found in the Excel (left unchanged)</summary><div style="font-size:12px;margin-top:4px">${un.map(l=>esc((l.last||'')+(l.first?', '+l.first:''))).join('; ')}</div></details>`:''})()}
+   ${p.amb.length?`<div class="smsg warn" style="margin:8px 0 0"><b>Needs your confirmation</b> — these names could be more than one learner, so no grades are assigned until you choose:${p.amb.map((a,ai)=>{const mu=new Set(p.ms.map(m=>m.l.id));const op=a.cands.filter(l=>!mu.has(l.id)).map(l=>`<option value="${l.id}">${esc(l.last)}, ${esc(l.first)}</option>`).join('');return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;font-weight:400"><span style="min-width:200px">${esc(a.x.name)}</span><select onchange="xiAmb(${pi},${ai},this.value)"><option value="">— skip (assign nobody) —</option>${op}</select></div>`}).join('')}</div>`:''}</div>`}).join('');
  const total=XI.plan.reduce((n,p)=>n+(p.ms&&p.on?p.ms.filter(m=>m.on).length:0),0);
  openModal(`<h3 style="margin-top:0">Import scores from Excel</h3>
   <p class="sub" style="margin:0 0 6px"><b>${esc(d.file)}</b> · Quarters found: ${d.qs.map(qn).join(', ')}${d.hdr.section?' · Section in file: <b>'+esc(d.hdr.section)+'</b>':''}${d.hdr.subject?' · Subject: <b>'+esc(d.hdr.subject)+'</b>':''}</p>
   <p class="sub" style="margin:0 0 8px">Only learners whose names match a learner already in the section get scores, copied from their own row in the Excel. Learners who are not in the Excel, and blank Excel cells, are left exactly as they are.</p>
+  ${sumHTML}
   ${d.warns.length?`<div class="smsg warn" style="margin:0 0 8px">${d.warns.slice(0,5).map(esc).join('<br>')}${d.warns.length>5?'<br>…and '+(d.warns.length-5)+' more':''}</div>`:''}
   <div style="display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 10px;font-size:13px">
    <label style="display:flex;gap:6px;align-items:center;color:inherit"><input type="checkbox" ${o.hps?'checked':''} onchange="xiOpt('hps',this.checked)">Copy the Highest Possible Scores</label>
-   <label style="display:flex;gap:6px;align-items:center;color:inherit"><input type="checkbox" ${o.ow?'checked':''} onchange="xiOpt('ow',this.checked)">Replace scores already in the app</label>
+   <label style="display:flex;gap:6px;align-items:center;color:inherit"><input type="checkbox" ${o.ow?'checked':''} onchange="xiOpt('ow',this.checked)">Replace existing scores that differ (off = only blank cells are filled)</label>
    ${d.hdr.w?`<label style="display:flex;gap:6px;align-items:center;color:inherit"><input type="checkbox" ${o.w?'checked':''} onchange="xiOpt('w',this.checked)">Use the Excel's weights (WW ${d.hdr.w[0]}% · PT ${d.hdr.w[1]}% · QA ${d.hdr.w[2]}%)</label>`:''}</div>
   <p class="sub" style="margin:0 0 6px">The grade column compares the Excel's Quarterly Grade with the grade the app will show: <span class="ok">✓</span> means they agree.</p>
+  ${matchedAny&&!total?'<div class="smsg warn" style="margin:0 0 8px"><b>Nothing is ticked yet.</b> Names were found, but no learner is selected, so nothing will be copied. Tick the learners below (or click <b>Tick all</b>) and then press Import.</div>':''}
   ${matchedAny?cards:'<div class="card">No learner name in this Excel matches a learner recorded in any section. Check the spelling of the names, or add the learners under Learners first.</div>'}
-  ${lost.length&&matchedAny?`<details style="margin:4px 0 10px"><summary class="sub" style="cursor:pointer">${lost.length} name${lost.length===1?'':'s'} in the Excel matched no one (nothing copied)</summary><div style="font-size:12px;margin-top:4px">${lost.map(x=>esc(x.name)).join('; ')}</div></details>`:''}
-  <div style="text-align:right;margin-top:10px"><button class="btn" onclick="closeModal()">Cancel</button> <button class="btn y" ${total?'':'disabled'} onclick="xiApply()">Import scores for ${total} learner${total===1?'':'s'}</button></div>`);
+  ${lost.length?`<details open style="margin:4px 0 10px"><summary class="sub" style="cursor:pointer"><b>Unmatched students — manual review:</b> ${lost.length} name${lost.length===1?'':'s'} in the Excel matched no learner (nothing was copied for them)</summary><div style="font-size:12px;margin-top:4px">${lost.map(x=>esc(x.name)).join('; ')}</div></details>`:''}
+  <div style="text-align:right;margin-top:10px"><button class="btn" onclick="closeModal()">Cancel</button> <button class="btn y" ${total&&st.ready?'':'disabled'} onclick="xiApply()">Import ${st.ready} score${st.ready===1?'':'s'} for ${total} learner${total===1?'':'s'}</button></div>`);
  $('#mbox').classList.add('wide');$('#mbox').scrollTop=top}
 function xiTogC(i,v){XI.plan[i].on=v;xiShow()}
+function xiAll(i,v){XI.plan[i].ms.forEach(m=>m.on=v);if(v)XI.plan[i].on=true;xiShow()}
 function xiTogM(i,j,v){XI.plan[i].ms[j].on=v;xiShow()}
 function xiSub(i,v){XI.plan[i].sub=+v;xiShow()}
 function xiOpt(k,v){XI.o[k]=v;xiShow()}
-function xiApply(){const d=XI.d,o=XI.o,undo=[];let nS=0,nL=0;const secs=[];
- for(const p of XI.plan){if(!p.ms||!p.on)continue;const picks=p.ms.filter(m=>m.on);if(!picks.length)continue;const c=p.c;let sb,created=false;
-  if(p.sub<0){sb={n:d.hdr.subject||'Subject '+(c.ns.length+1),w:(S.p.dw||[25,50,25]).slice(),q:{}};c.ns.push(sb);created=true}else sb=c.ns[p.sub];
-  sb.q=sb.q||{};undo.push({c,sb,q:JSON.stringify(sb.q),w:sb.w.slice(),created});
-  if(o.w&&d.hdr.w)sb.w=d.hdr.w.slice();
-  for(const q of d.qs){const D=d.q[q],dd=QD(sb,q);if(o.hps){const H=xiHps(dd.h,D.hps,true);dd.h.ww=H.ww;dd.h.pt=H.pt;dd.h.qa=H.qa}
-   for(const m of picks){const X=m.x.q[q];if(!X||!X.has)continue;const A=SD(dd,m.l.id);A.ww=xiArr(A.ww,X.ww,o.ow);A.pt=xiArr(A.pt,X.pt,o.ow);if(X.qa!==null&&(o.ow||E(A.qa)))A.qa=xiS(X.qa);nS++}}
-  nL+=picks.length;secs.push(`${esc(c.name)} → ${esc(sb.n)}: ${picks.length}`)}
- XI.undo=undo;commit();render();
- openModal(`<h3 style="margin-top:0">Scores imported ✓</h3><p>Scores were copied for <b>${nL}</b> learner${nL===1?'':'s'} (${nS} quarter record${nS===1?'':'s'}).</p><div class="sub">${secs.join('<br>')}</div><p class="sub">Open the Class Record to review them. Nothing else was changed.</p><div style="text-align:right"><button class="btn r" style="float:left" onclick="xiUndo()">Undo this import</button><button class="btn y" onclick="closeModal()">Done</button></div>`)}
+function xiTotSkip(X,k,A){return !!(X.tot&&X.tot[k]&&(A[k]||[]).some((v,i)=>i>0&&!E(v)))}
+function xiCmp(sb,m,q){const o=XI.o,r={ready:0,same:0,replace:0,kept:0},X=m.x.q[q];if(!X||!X.has)return r;
+ const A=(sb&&sb.q&&sb.q[q]&&sb.q[q].s&&sb.q[q].s[m.l.id])||{ww:[],pt:[],qa:''};
+ const chk=(ex,b)=>{if(ex===null)return;if(E(b)){r.ready++;return}if(Number(b)===ex){r.same++;return}if(o.ow){r.ready++;r.replace++}else r.kept++};
+ for(const k of['ww','pt']){if(xiTotSkip(X,k,A)){r.kept+=X[k].filter(v=>v!==null).length;continue}for(let i=0;i<10;i++)chk(X[k][i],A[k]&&A[k][i])}
+ chk(X.qa,A.qa);return r}
+function xiStats(){const d=XI.d;let ext=0,ready=0,same=0,replace=0,kept=0,learners=0;const mr=new Set(),ar=new Set();
+ for(const x of d.roster)for(const q of d.qs){const X=x.q[q];if(X&&X.has){X.ww.concat(X.pt).forEach(v=>{if(v!==null)ext++});if(X.qa!==null)ext++}}
+ for(const p of XI.plan){if(!p.ms)continue;p.ms.forEach(m=>mr.add(m.x.r));p.amb.forEach(a=>ar.add(a.x.r));if(!p.on)continue;const sb=p.sub>=0?p.c.ns[p.sub]:null;
+  for(const m of p.ms){if(!m.on)continue;learners++;for(const q of d.qs){const c=xiCmp(sb,m,q);ready+=c.ready;same+=c.same;replace+=c.replace;kept+=c.kept}}}
+ return{det:d.roster.length,ext,ready,same,replace,kept,learners,matched:mr.size,unmatched:d.roster.filter(x=>!mr.has(x.r)&&!ar.has(x.r)),ambOnly:d.roster.filter(x=>ar.has(x.r)&&!mr.has(x.r))}}
+function xiAmb(pi,ai,id){const p=XI.plan[pi],a=p.amb[ai];if(!a||!id)return;const l=a.cands.find(z=>z.id===id);if(!l||p.ms.some(m=>m.l.id===id))return;
+ p.ms.push({x:a.x,l,k:1,sur:false,on:true});p.ms.sort((u,v)=>u.x.r-v.x.r);p.amb.splice(ai,1);p.on=true;xiShow()}
+function xiRollback(undo){for(const u of undo){u.sb.q=JSON.parse(u.q);u.sb.w=u.w;if(u.created){const i=u.c.ns.indexOf(u.sb);if(i>=0)u.c.ns.splice(i,1)}}}
+function xiFail(msg){if(XI.mode==='paste'){XP.err=msg;return xpShow()}closeModal();openModal(`<h3 style="margin-top:0;color:#b02a4d">Import NOT saved ✗</h3><div class="smsg bad">${esc(msg)}</div><div style="text-align:right;margin-top:10px"><button class="btn y" onclick="closeModal()">Close</button></div>`)}
+function xiApply(){
+ if(SHARE)return xiFail('This is a read-only shared view, so nothing can be saved here.');
+ const d=XI.d,o=XI.o,st=xiStats();
+ if(!st.learners)return xiFail('No learners are ticked, so nothing was imported.');
+ if(!st.ready)return xiFail('There is nothing new to save: the Excel has no scores for the ticked learners, or the scores are already in the app. Nothing was changed.');
+ if(o.ow&&st.replace>0&&!confirm('This import will REPLACE '+st.replace+' score'+(st.replace===1?'':'s')+' that are already saved in the app with different values from the Excel.\n\nReplace them?\n(You can use "Undo this import" afterwards.)'))return;
+ const undo=[],done=[],secs=[];let nW=0,nL=0;
+ try{
+  for(const p of XI.plan){if(!p.ms||!p.on)continue;const picks=p.ms.filter(m=>m.on);if(!picks.length)continue;const c=p.c;let sb,created=false;const nW0=nW,u0=undo.length;
+   if(p.sub<0){sb={n:d.hdr.subject||'Subject '+(c.ns.length+1),w:(S.p.dw||[25,50,25]).slice(),q:{}};c.ns.push(sb);created=true}else sb=c.ns[p.sub];
+   sb.q=sb.q||{};undo.push({c,sb,q:JSON.stringify(sb.q),w:sb.w.slice(),created});
+   if(o.w&&d.hdr.w)sb.w=d.hdr.w.slice();
+   const put=(arr,ex)=>{const nw=xiArr(arr,ex,o.ow);for(let i=0;i<10;i++)if(ex[i]!==null&&String(nw[i])!==String(arr&&arr[i]!==undefined?arr[i]:''))nW++;return nw};
+   for(const q of d.qs){if(!picks.some(m=>m.x.q[q]&&m.x.q[q].has))continue;const D=d.q[q],dd=QD(sb,q);
+    if(o.hps){const H=xiHps(dd.h,D.hps,true,o.ow);dd.h.ww=H.ww;dd.h.pt=H.pt;dd.h.qa=H.qa}
+    for(const m of picks){const X=m.x.q[q];if(!X||!X.has)continue;const A=SD(dd,m.l.id);if(!xiTotSkip(X,'ww',A))A.ww=put(A.ww,X.ww);if(!xiTotSkip(X,'pt',A))A.pt=put(A.pt,X.pt);
+     if(X.qa!==null&&(o.ow||E(A.qa))){if(String(A.qa)!==xiS(X.qa))nW++;A.qa=xiS(X.qa)}}}
+   if(created&&nW===nW0){const i=c.ns.indexOf(sb);if(i>=0)c.ns.splice(i,1);undo.length=u0;continue}
+   nL+=picks.length;secs.push(`${esc(c.name)} → ${esc(sb.n)}: ${picks.length}`);done.push({c,sb,si:c.ns.indexOf(sb)})}
+ }catch(e){xiRollback(undo);return xiFail('The import stopped because of an error ('+(e&&e.message||e)+'). Nothing was changed.')}
+ if(!done.length){xiRollback(undo);return xiFail('Nothing was imported. Nothing was changed.')}
+ // save NOW (not after the usual short delay) and prove it reached storage
+ clearTimeout(commit.t);dirty=true;save();
+ let ok=!saveFail,why='';
+ if(ok){try{const back=JSON.parse(localStorage.getItem(KEY));ok=done.every(z=>{const c2=(back.classes||[]).find(c=>c.id===z.c.id),s2=c2&&c2.ns&&c2.ns[z.si];return !!s2&&JSON.stringify(s2.q)===JSON.stringify(z.sb.q)});if(!ok)why='The data read back from storage did not match.'}catch(e){ok=false;why=String(e&&e.message||e)}}
+ if(!ok){const wasFail=saveFail;xiRollback(undo);XI.undo=null;clearTimeout(save.r);saveFail=false;dirty=false;if(!wasFail){try{save()}catch(e){}}paintChip();render();
+  return xiFail('The scores could not be saved in this browser'+(wasFail?' (storage is full or blocked)':'')+'. '+(why?why+' ':'')+'Nothing was imported and your existing records are unchanged. Download a backup from Settings, free some space, and try again.')}
+ XI.undo=undo;
+ const f=done.find(z=>z.c.id===S.cur)||done[0];S.cur=f.c.id;tab=Math.max(0,f.si);qt=d.qs[0];view='record';
+ const unl=done.filter(z=>{const w=S.cur;S.cur=z.c.id;const k=ecrLinked();S.cur=w;return !k});
+ render();
+ openModal(`<h3 style="margin-top:0">Scores imported and saved ✓</h3><p><b>${nW}</b> score${nW===1?'':'s'} saved for <b>${nL}</b> learner${nL===1?'':'s'}. They were checked in this browser's storage and will still be there after you refresh or reopen the class record.</p><div class="sub">${secs.join('<br>')}</div>${!o.ow&&st.kept?`<p class="sub">${st.kept} existing score${st.kept===1?'':'s'} that differ from the Excel were kept as they were.</p>`:''}${st.unmatched.length?`<p class="sub">${st.unmatched.length} name${st.unmatched.length===1?'':'s'} in the Excel matched no learner and were not imported.</p>`:''}${CF.tok?'<p class="sub">Cloud sync will follow shortly.</p>':''}<p class="sub">Only the ticked learners and the components present in the Excel were changed.</p>${unl.map(z=>`<div class="smsg warn" style="margin:8px 0">The Class Grades Record of <b>${esc(z.c.name)}</b> is not linked to the Class Record, so that page still shows its own separate entries. <button class="btn y" onclick="xiLink('${z.c.id}')">Link it now</button></div>`).join('')}<div style="text-align:right"><button class="btn r" style="float:left" onclick="xiUndo()">Undo this import</button><button class="btn y" onclick="closeModal()">Done</button></div>`)}
+
+function xiLink(id){closeModal();S.cur=id;ecrToggleLink(true)}
 function xiUndo(){if(!XI.undo)return;for(const u of XI.undo){u.sb.q=JSON.parse(u.q);u.sb.w=u.w;if(u.created){const i=u.c.ns.indexOf(u.sb);if(i>=0)u.c.ns.splice(i,1)}}XI.undo=null;tab=0;commit();closeModal();render();toast('Import undone')}
 const xiClose0=closeModal;closeModal=function(){const b=$('#mbox');if(b)b.classList.remove('wide');return xiClose0.apply(this,arguments)};
+
+/* ===== Paste Grades from Excel =====
+   Parses copied Excel cells (tab/newline text), finds the learner-name column and the Written Works /
+   Performance Tasks / Quarterly Assessment columns, then hands a roster to the SAME matching (xiBuild),
+   preview helpers (xiStats/xiCmp/xiAmb/xiTogM), conflict rules and save-and-verify code (xiApply) the
+   Excel-file import uses. */
+const XP={text:'',last:'',grid:null,res:null,map:null,manual:false,q:1,sub:0,err:''};
+const xpN=s=>String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9%]+/g,' ').replace(/\s+/g,' ').trim();
+const xpNum=v=>{if(v==null)return null;const t=String(v).replace(/[\s\u00a0]/g,'').replace(/,(?=\d{1,2}$)/,'.').replace(/,/g,'');return /^\d+(\.\d+)?$/.test(t)?+t:null};
+function xpCol(i){let s='';i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s}
+function xpParse(t){
+ const run=useQ=>{const rows=[];let row=[],f='',q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+   if(q){if(ch==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=ch;continue}
+   if(useQ&&ch==='"'&&f===''){q=true;continue}
+   if(ch==='\t'){row.push(f);f=''}
+   else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;row.push(f);rows.push(row);row=[];f=''}
+   else f+=ch}
+  row.push(f);rows.push(row);return{rows,open:q}};
+ t=String(t).replace(/^\uFEFF/,'');let r=run(true);if(r.open)r=run(false);let rows=r.rows;
+ while(rows.length&&rows[rows.length-1].every(x=>!String(x).trim()))rows.pop();
+ if(rows.length>1&&!rows.some(a=>a.length>1))rows=rows.map(a=>String(a[0]||'').split(/\s{2,}/)); // spaces instead of tabs
+ rows=rows.map(a=>a.map(x=>String(x).replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim()));
+ const W=Math.max(1,...rows.map(a=>a.length));rows.forEach(a=>{while(a.length<W)a.push('')});return rows}
+function xpStu(raw){let s=String(raw||'').replace(/^\s*\d{1,3}\s*[.)]\s+/,'').trim();if(!s)return null;const u=xpN(s);
+ if(!/[A-Z]{2}/.test(u))return null;
+ if(/^(MALES?|FEMALES?|BOYS?|GIRLS?|TOTALS?|HIGHEST POSSIBLE( SCORES?)?|HPS|(LEARNER|STUDENT)S?( S)? NAMES?|NAMES?|AVERAGE|PASSED|FAILED|REMARKS?|SUBJECT|TEACHER|ADVISER|SECTION)$/.test(u))return null;
+ if(/^HIGHEST POSSIBLE/.test(u)||/\b(PREPARED|CHECKED|NOTED|CERTIFIED|APPROVED|SUBMITTED|REVIEWED|CONFORME) BY\b/.test(u)||/:\s*$/.test(s))return null;
+ if(xiPh(s))return null;if(!/,/.test(s)&&/\b(TEACHER|PRINCIPAL|COORDINATOR|OIC|ADVISER|ADVISOR|SUPERVISOR|DIRECTOR|SUPERINTENDENT|HEAD)\b/.test(u))return null;return s}
+function xpGuessName(g,start,W){let best=-1,bn=0;for(let c=0;c<W;c++){let n=0;for(let r=start;r<g.length;r++){const v=g[r][c];if(v&&!/^[\d.,%\s]+$/.test(v)&&xpStu(v)&&(/[ ,]/.test(v)))n++}if(n>bn){bn=n;best=c}}return best}
+function xpTotCheck(g,L,st){let ok=0,bad=0;for(const k of['ww','pt']){const l=L[k];if(!l||l.tot||l.totCol==null||l.totCol<0)continue;
+ for(const s of st){const it=l.cols.filter(c=>c!=null).map(c=>xpNum(g[s.row][c])).filter(v=>v!==null),tv=xpNum(g[s.row][l.totCol]);
+  if(it.length&&tv!==null){Math.abs(it.reduce((a,b)=>a+b,0)-tv)<0.011?ok++:bad++}}}return{ok,bad}}
+function xpLayHdr(nz,W,hdr,fs,hps){
+ const comps=[['ww',hdr.W],['pt',hdr.P],['qa',hdr.Q]].filter(x=>x[1]).sort((a,b)=>a[1].c-b[1].c),L={ww:null,pt:null,qa:null,totCol:{}},notes=[];let conf=true;
+ const STOP=/^(INITIAL|QUARTERLY|FINAL)( GRADE)?$|^REMARKS?$|^TRANSMUTED/,EX=/TOTAL|^PS$|^WS$|PERCENT|^%$|WEIGHT|GRADE|INITIAL|TRANSMUT|HIGHEST|^HPS$|REMARK|^SUM$|^AVERAGE$/;
+ comps.forEach(([k,h],i)=>{
+  const r0=h.r,lim=hps>r0?hps-1:fs-1,r1=Math.max(r0,Math.min(lim,r0+3));
+  const labs=c=>{const o=[];for(let r=r0;r<=r1;r++)if(nz[r][c])o.push(nz[r][c]);return c===h.c?o.slice(1):o};
+  let end=i+1<comps.length?comps[i+1][1].c-1:W-1;
+  for(let c=h.c+1;c<=end;c++)if(labs(c).some(v=>STOP.test(v))){end=c-1;break}
+  const items=[],cand=[];let dup=false,totCol=-1;
+  for(let c=h.c;c<=end;c++){const ls=labs(c),m=ls.map(v=>/^(10|[1-9])$/.test(v)?+v:0).find(Boolean);
+   if(m){if(items[m-1]!==undefined)dup=true;items[m-1]=c;continue}
+   if(ls.some(v=>/TOTAL/.test(v)))totCol=c;
+   if(ls.some(v=>EX.test(v)))continue;cand.push(c)}
+  const nm={ww:'Written Works',pt:'Performance Tasks',qa:'Quarterly Assessment'}[k];
+  if(items.some(x=>x!==undefined)){
+   if(dup){conf=false;notes.push(nm+': some item numbers appear more than once.')}
+   if(k==='qa')L.qa=items.find(x=>x!==undefined);
+   else{const cols=Array.from({length:10},(_,j)=>items[j]===undefined?null:items[j]);L[k]={cols,tot:false,n:cols.filter(x=>x!==null).length,totCol:totCol}}
+  }else if(cand.length===1){if(k==='qa')L.qa=cand[0];else L[k]={cols:[cand[0]],tot:true,n:1,totCol:-1}}
+  else if(cand.length>1){conf=false;notes.push(nm+': several columns sit under this heading with no item numbers, so I assumed they are items 1, 2, 3… in order.');
+   if(k==='qa')L.qa=cand[0];else{const cols=cand.slice(0,10);L[k]={cols,tot:false,n:cols.length,totCol:-1}}}
+  else notes.push(nm+': the heading was found but no score column sits under it.')});
+ return{L,conf,notes,how:'column headings'}}
+function xpLayTpl(g,n,W,st){const notes=[];
+ const rg=(a,len)=>Array.from({length:len},(_,i)=>a+i);
+ if(W>n+30){const L={ww:{cols:rg(n+4,10),tot:false,n:10,totCol:n+14},pt:{cols:rg(n+17,10),tot:false,n:10,totCol:n+27},qa:n+30};
+  return{L,conf:null,notes,how:'the standard Class Record column layout (no headings were pasted)'}}
+ const cols=[];for(let c=n+1;c<W;c++)if(st.some(s=>xpNum(g[s.row][c])!==null))cols.push(c);
+ if(cols.length===3){notes.push('No headings were pasted, so I assumed the three number columns after the names are Written Works, Performance Tasks and Quarterly Assessment (one total each).');
+  return{L:{ww:{cols:[cols[0]],tot:true,n:1,totCol:-1},pt:{cols:[cols[1]],tot:true,n:1,totCol:-1},qa:cols[2]},conf:false,notes,how:'a guess'}}
+ return{L:{ww:null,pt:null,qa:null},conf:false,notes,how:'none'}}
+function xpDetect(g,man){
+ const R=g.length,W=Math.max(1,...g.map(a=>a.length)),nz=g.map(a=>a.map(xpN));
+ if(!R||W<2)return{ok:false,msg:'No table was found in what you pasted. In Excel, select the cells and press Ctrl+C, then paste here with Ctrl+V.',W};
+ const HR=Math.min(R,30),find=(re,sk)=>{for(let r=0;r<HR;r++)for(let c=0;c<W;c++){const v=nz[r][c];if(v&&v.length<48&&re.test(v)&&!(sk&&sk.test(v)))return{r,c}}return null};
+ const hdr={N:find(/^(LEARNER|STUDENT)S?( S)? NAMES?$|^(FULL )?NAMES?$|^LEARNERS?$|^STUDENTS?$|^NAME OF (LEARNER|STUDENT)S?$/,/SCHOOL/),W:find(/^WRITTEN WORKS?\b/),P:find(/^PERFORMANCE TASKS?\b/),Q:find(/^QUARTERLY ASSESSMENT\b|^QA$|^QUARTERLY EXAM/)};
+ const hr=[hdr.N,hdr.W,hdr.P,hdr.Q].filter(Boolean).map(h=>h.r),hdrRow=hr.length?Math.max(...hr):-1,start=hdrRow+1;
+ const nameCol=man?man.name:hdr.N?hdr.N.c:xpGuessName(g,start,W);
+ if(nameCol==null||nameCol<0)return{ok:false,msg:'I could not find the column that holds the learners’ names. Choose it below.',W,nameCol:-1};
+ const students=[];let sex='',hpsRow=-1;
+ for(let r=start;r<R;r++){const raw=g[r][nameCol]||'',u=nz[r][nameCol];
+  if(/^(MALES?|BOYS?)$/.test(u)){sex='M';continue}if(/^(FEMALES?|GIRLS?)$/.test(u)){sex='F';continue}
+  if(/\b(PREPARED|CHECKED|NOTED|CERTIFIED|APPROVED|SUBMITTED|REVIEWED|CONFORME) BY\b/.test(u)&&r>start)break; // signature block = end of the table
+  if(/^HIGHEST POSSIBLE/.test(u)||u==='HPS'){if(hpsRow<0)hpsRow=r;continue}
+  const nm=xpStu(raw);if(!nm)continue;let lrn='';
+  for(let c=Math.max(0,nameCol-3);c<nameCol;c++){const m=/^\d{10,13}$/.exec((g[r][c]||'').replace(/\s/g,''));if(m)lrn=m[0]}
+  students.push({row:r,name:nm,sex,lrn})}
+ if(!students.length)return{ok:false,msg:'No student names were found under the headings. Check that the names are in the column you pasted.',W,nameCol};
+ let L,how,conf=true,notes=[];
+ if(man){const rng=a=>a?(a[0]===a[1]?{cols:[a[0]],tot:true,n:1,totCol:-1}:{cols:Array.from({length:a[1]-a[0]+1},(_,i)=>a[0]+i),tot:false,n:a[1]-a[0]+1,totCol:-1}):null;
+  L={ww:rng(man.ww),pt:rng(man.pt),qa:man.qa>=0?man.qa:null};how='the columns you chose'}
+ else if(hdr.W||hdr.P||hdr.Q){const o=xpLayHdr(nz,W,hdr,students[0].row,hpsRow);L=o.L;conf=o.conf;notes=o.notes;how=o.how}
+ else{const o=xpLayTpl(g,nameCol,W,students);L=o.L;conf=o.conf;notes=o.notes;how=o.how}
+ if(!L.ww&&!L.pt&&!L.qa)return{ok:false,msg:'I found the names but could not tell which columns hold Written Works, Performance Tasks and Quarterly Assessment. Choose them below.',W,nameCol};
+ const val=(r,c)=>c==null||c<0?null:xpNum(g[r][c]);let txt=[];
+ const arr=(r,k)=>{const o=Array(10).fill(null),l=L[k];if(!l)return o;if(l.tot)o[0]=val(r,l.cols[0]);else l.cols.forEach((c,i)=>{if(c!=null&&i<10)o[i]=val(r,c)});return o};
+ students.forEach(s=>{s.ww=arr(s.row,'ww');s.pt=arr(s.row,'pt');s.qa=L.qa==null?null:val(s.row,L.qa);s.has=s.ww.concat(s.pt,[s.qa]).some(v=>v!==null);
+  const cs=[];for(const k of['ww','pt'])if(L[k])L[k].cols.forEach(c=>{if(c!=null)cs.push(c)});if(L.qa!=null)cs.push(L.qa);
+  cs.forEach(c=>{const v=g[s.row][c];if(v&&xpNum(v)===null)txt.push(v)})});
+ let hps=null;if(hpsRow>=0){const h={ww:arr(hpsRow,'ww'),pt:arr(hpsRow,'pt'),qa:val(hpsRow,L.qa)};if(h.ww.concat(h.pt,[h.qa]).some(v=>v!==null))hps=h}
+ if(!man){const tc=xpTotCheck(g,L,students);
+  if(tc.bad>0){conf=false;notes.push('The Total column does not equal the sum of the item columns for '+tc.bad+' value'+(tc.bad===1?'':'s')+', so the columns may be shifted. Please check them.')}
+  else if(conf===null)conf=tc.ok>0;
+  if(conf===false&&!notes.length&&how.startsWith('the standard'))notes.push('I could not verify the standard layout (no student had both item scores and a matching Total), so please confirm the columns.')}
+ if(txt.length)notes.push(txt.length+' cell'+(txt.length===1?'':'s')+' in the score columns contained text instead of numbers and '+(txt.length===1?'was':'were')+' ignored ('+[...new Set(txt)].slice(0,4).join(', ')+').');
+ return{ok:true,conf:!!conf,how,nameCol,W,L,students,hps,notes,hpsRow}}
+function xpOpen(){const c=C();if(!c)return toast('Open a class first.');
+ if(c.mode!=='num'||!c.ns||!c.ns.length)return toast('Pasting grades needs a class with numeric (DepEd) grading and at least one subject.',4000);
+ XP.text='';XP.last='';XP.grid=null;XP.res=null;XP.map=null;XP.manual=false;XP.err='';XP.q=(qt>=1&&qt<=4)?qt:1;XP.sub=Math.max(0,Math.min(typeof tab==='number'?tab:0,c.ns.length-1));
+ XI.mode='paste';XI.o={hps:false,ow:false,w:false};XI.d=null;XI.plan=[];XI.undo=null;openModal('');$('#mbox').classList.add('wide');xpShow()}
+function xpPasted(){setTimeout(()=>{xpAnalyze()},40)}
+function xpAnalyze(){const el=$('#xpTxt');const t=el?el.value:XP.text;XP.text=t;XP.err='';
+ if(!t.trim()){XP.res=null;XP.grid=null;XI.d=null;XI.plan=[];XP.err='Paste the copied Excel cells into the box first.';return xpShow()}
+ if(t!==XP.last){XP.map=null;XP.manual=false}XP.last=t;
+ try{XP.grid=xpParse(t);XP.res=xpDetect(XP.grid,XP.map)}catch(e){XP.res=null;XI.d=null;XI.plan=[];XP.err='Could not read the pasted table: '+(e&&e.message||e);return xpShow()}
+ xpBuild();xpShow()}
+function xpRekey(){const R=XP.res,d=XI.d,q=XP.q;if(!d||!R||!R.ok)return;d.qs=[q];
+ d.roster.forEach(x=>{const s=x._s;x.q={};x.q[q]={ww:s.ww,pt:s.pt,qa:s.qa,qg:null,has:s.has,tot:{ww:!!(R.L.ww&&R.L.ww.tot),pt:!!(R.L.pt&&R.L.pt.tot)}}});
+ d.q={};d.q[q]={hps:R.hps||{ww:Array(10).fill(null),pt:Array(10).fill(null),qa:null}}}
+function xpBuild(){const R=XP.res;XI.d=null;XI.plan=[];if(!R||!R.ok)return;
+ XI.d={file:'pasted table',qs:[XP.q],q:{},roster:R.students.map((s,i)=>({r:i+1,sex:s.sex,name:s.name,lrn:s.lrn||'',q:{},_s:s})),warns:[],skipped:[],hdr:{section:'',teacher:'',subject:''}};
+ xpRekey();xiBuild();XI.plan=XI.plan.filter(p=>p.c.id===S.cur);const p=XI.plan[0];
+ if(p&&!p.skip){if(p.c.ns[XP.sub])p.sub=XP.sub;p.on=p.ms.length>0}}
+function xpQ(v){XP.q=+v;xpRekey();xpShow()}
+function xpSub(v){XP.sub=+v;if(XI.plan[0]&&!XI.plan[0].skip)XI.plan[0].sub=XP.sub;xpShow()}
+function xpUseMap(){const g=n=>+$('#'+n).value,name=g('xpmN'),w1=g('xpmW1'),w2=g('xpmW2'),p1=g('xpmP1'),p2=g('xpmP2'),qa=g('xpmQ');
+ const rg=(a,b,nm)=>{if(a<0&&b<0)return null;if(a<0||b<0)throw new Error(nm+': choose both the first and the last column (or “not in this paste” for both).');if(a>b)throw new Error(nm+': the first column must be left of the last column.');if(b-a>9)throw new Error(nm+': a component has at most 10 item columns.');return[a,b]};
+ try{const m={name,ww:rg(w1,w2,'Written Works'),pt:rg(p1,p2,'Performance Tasks'),qa};if(!m.ww&&!m.pt&&m.qa<0)throw new Error('Choose at least one grading component.');XP.map=m;XP.manual=true;XP.err='';
+  XP.res=xpDetect(XP.grid,m);xpBuild();xpShow()}catch(e){XP.err=e.message;xpShow()}}
+function xpMapPanel(open){const g=XP.grid||[[]],R=XP.res||{},W=Math.max(1,...g.map(a=>a.length)),L=R.L||{};
+ const sr=R.students&&R.students[0]?R.students[0].row:0;
+ const hint=c=>{let tp='';for(let r=0;r<Math.min(g.length,6)&&!tp;r++)if(g[r][c]&&!/^[\d.]+$/.test(g[r][c]))tp=g[r][c];const sm=(g[sr]||[])[c]||'';return 'Col '+(c+1)+' ('+xpCol(c)+')'+(tp?' · '+tp.slice(0,16):'')+(sm&&sm!==tp?' · e.g. '+sm.slice(0,14):'')};
+ const ops=(v,none)=>(none?`<option value="-1" ${v<0?'selected':''}>— not in this paste —</option>`:'')+Array.from({length:W},(_,c)=>`<option value="${c}" ${c===v?'selected':''}>${esc(hint(c))}</option>`).join('');
+ const rg=l=>{const cs=l&&l.cols?l.cols.filter(x=>x!=null):[];return cs.length?[Math.min(...cs),Math.max(...cs)]:[-1,-1]};
+ const w=rg(L.ww),p=rg(L.pt);const nm=R.nameCol!=null?R.nameCol:-1,qa=L.qa!=null?L.qa:-1;
+ return `<details ${open?'open':''} style="margin:8px 0;border:1px solid var(--line);border-radius:10px;padding:8px 12px"><summary style="cursor:pointer"><b>Columns used</b> <span class="sub" style="margin:0">— change them if they are wrong</span></summary>
+ <div class="sub" style="margin:6px 0">Pick the column that holds each component. A component spanning several columns is saved as its items 1, 2, 3… in order; choosing the <b>same</b> column for first and last means that column is a single total (saved in item 1).</div>
+ <div class="grid2"><label>Learners’ names<select id="xpmN">${ops(nm,false)}</select></label><label>Quarterly Assessment<select id="xpmQ">${ops(qa,true)}</select></label>
+ <label>Written Works — first column<select id="xpmW1">${ops(w[0],true)}</select></label><label>Written Works — last column<select id="xpmW2">${ops(w[1],true)}</select></label>
+ <label>Performance Tasks — first column<select id="xpmP1">${ops(p[0],true)}</select></label><label>Performance Tasks — last column<select id="xpmP2">${ops(p[1],true)}</select></label></div>
+ <div style="text-align:right;margin-top:8px"><button class="btn y" onclick="xpUseMap()">Use these columns</button></div></details>`}
+function xpConfirm(){const R=XP.res;if(!R||!R.ok||(!R.conf&&!XP.manual))return;xiApply()}
+function xpShow(){
+ const box=$('#mbox'),top=box.scrollTop,c=C(),R=XP.res,d=XI.d,p=XI.plan[0],o=XI.o,qn=['1st','2nd','3rd','4th'];
+ const bx=(l,v,col)=>`<div style="border:1px solid var(--line);border-radius:10px;padding:6px 10px;${col?'color:'+col:''}"><div class="sub" style="margin:0;font-size:11px">${l}</div><b style="font-size:18px">${v}</b></div>`;
+ let body='',canSave=false,st=null;
+ if(R&&!R.ok)body=`<div class="smsg bad">${esc(R.msg)}</div>${XP.grid&&XP.grid[0]&&XP.grid[0].length>1?xpMapPanel(true):''}`;
+ else if(R&&p&&p.skip)body=`<div class="smsg bad">${esc(p.skip)}</div>`;
+ else if(R&&p){
+  st=xiStats();const sb=p.sub>=0?p.c.ns[p.sub]:null;
+  let blank=0;d.roster.forEach(x=>{const s=x._s;['ww','pt','qa'].forEach(k=>{if(!R.L[k]&&!(k==='qa'&&R.L.qa!=null))return;const n=k==='qa'?1:R.L[k].n,have=k==='qa'?(s.qa!==null?1:0):s[k].filter(v=>v!==null).length;blank+=n-have})});
+  const hs=sb&&sb.q&&sb.q[XP.q]&&sb.q[XP.q].h,hasH=hs&&((hs.ww||[]).concat(hs.pt||[],[hs.qa]).some(v=>!E(v)));
+  const used=new Set(p.ms.map(m=>m.l.id));
+  const cell=(x,k)=>{const s=x._s,inc=k==='qa'?R.L.qa!=null:!!R.L[k];if(!inc)return '<td class="sub" style="text-align:center">—</td>';
+   if(k==='qa')return `<td style="text-align:right">${s.qa===null?'<i class="sub">blank</i>':'<b>'+xiS(s.qa)+'</b>'}</td>`;
+   const a=s[k],nn=a.filter(v=>v!==null);if(!nn.length)return '<td style="text-align:right"><i class="sub">blank</i></td>';
+   const sum=Math.round(nn.reduce((u,v)=>u+v,0)*100)/100,n=R.L[k].n;
+   return `<td style="text-align:right" title="${esc(a.map(v=>v===null?'–':xiS(v)).join('  '))}"><b>${sum}</b>${R.L[k].tot?'<div class="sub" style="margin:0;font-size:10px">total</div>':`<div class="sub" style="margin:0;font-size:10px">${nn.length}/${n} items</div>`}</td>`};
+  const rows=d.roster.map(x=>{const mi=p.ms.findIndex(m=>m.x===x),m=mi>=0?p.ms[mi]:null,ai=p.amb.findIndex(a=>a.x===x),a=ai>=0?p.amb[ai]:null;
+   let stt,tick='',who='<span class="sub">—</span>',note='';
+   if(m){const cmp=xiCmp(sb,m,XP.q);who=esc(m.l.last)+', '+esc(m.l.first);
+    tick=`<input type="checkbox" ${m.on?'checked':''} onchange="xiTogM(0,${mi},this.checked)">`;
+    stt=m.k===1?'<span style="color:#12795a">Matched (you confirmed)</span>':(m.k>=3||m.sur)?'<span style="color:#12795a">Matched</span>':'<span style="color:#7a5600">Close match — tick to confirm</span>';
+    if(!x._s.has)note='nothing to import (blank)';
+    else{const nw=cmp.ready-(o.ow?cmp.replace:0),parts=[];if(nw)parts.push(nw+' new');if(cmp.same)parts.push(cmp.same+' already saved');if(cmp.replace)parts.push('<b style="color:#b02a4d">'+cmp.replace+' will be replaced</b>');if(cmp.kept)parts.push(cmp.kept+' differ — kept');note=parts.join(' · ')||'—'}}
+   else if(a){const op=a.cands.filter(l=>!used.has(l.id)).map(l=>`<option value="${l.id}">${esc(l.last)}, ${esc(l.first)}</option>`).join('');
+    stt=`<select onchange="xiAmb(0,${ai},this.value)"><option value="">Ambiguous — choose a learner…</option>${op}</select>`;note='no grades assigned until you choose'}
+   else{stt='<span style="color:#b02a4d">Unmatched — not imported</span>';note='not in this class record'}
+   return `<tr><td style="text-align:center">${tick}</td><td>${who}</td><td>${esc(x.name)}</td>${cell(x,'ww')}${cell(x,'pt')}${cell(x,'qa')}<td>${stt}</td><td class="sub" style="font-size:12px">${note}</td></tr>`}).join('');
+  canSave=(R.conf||XP.manual)&&st.ready>0&&st.learners>0;
+  body=`<div class="card" style="padding:12px;margin:10px 0"><b>Preview — nothing is saved until you press Confirm and Save Grades</b>
+   <div class="sub" style="margin:2px 0 0">Read ${d.roster.length} student row${d.roster.length===1?'':'s'} using ${esc(R.how)}. Saving into <b>${esc(p.c.ns[p.sub].n)}</b>, <b>${qn[XP.q-1]} Quarter</b>. Only Written Works, Performance Tasks and Quarterly Assessment item scores are read; Total, PS, WS, Initial/Quarterly Grade and Highest Possible Score columns are ignored.</div>
+   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px">${bx('Students in pasted table',st.det)}${bx('Matched to learners',st.matched,'#12795a')}${bx('Unmatched',st.unmatched.length,st.unmatched.length?'#b02a4d':'')}${bx('Ambiguous (choose)',st.ambOnly.length,st.ambOnly.length?'#7a5600':'')}${bx('Scores found',st.ext)}${bx('Blank cells (ignored)',blank)}${bx('Ready to save',st.ready,'#12795a')}${o.ow?bx('Existing scores to be replaced',st.replace,st.replace?'#b02a4d':''):bx('Existing scores that differ (kept)',st.kept)}</div></div>
+   ${R.notes.map(n=>`<div class="smsg warn" style="margin:6px 0">${esc(n)}</div>`).join('')}
+   ${!R.conf&&!XP.manual?'<div class="smsg warn" style="margin:6px 0"><b>I am not fully sure the columns are right.</b> Open “Columns used” below, check or change them, and press “Use these columns” before saving.</div>':''}
+   ${!hasH&&!(o.hps&&R.hps)?'<div class="smsg warn" style="margin:6px 0">No Highest Possible Scores are set in the app for this quarter, so the grades will not calculate until you enter them'+(R.hps?' (or tick “Also copy the Highest Possible Scores” below)':'')+'.</div>':''}
+   ${st.ext&&!st.ready&&st.learners&&!st.kept?'<div class="smsg ok" style="margin:6px 0">Everything in this paste is already saved in the class record. Nothing new to import.</div>':''}
+   ${st.ext===0?'<div class="smsg bad" style="margin:6px 0"><b>No scores were found.</b> Every score cell in the pasted columns is blank.</div>':''}
+   ${st.kept&&!o.ow?'<div class="smsg warn" style="margin:6px 0">'+st.kept+' score'+(st.kept===1?'':'s')+' already in the app differ from the pasted values and will be <b>kept</b>. Tick “Replace existing scores” to overwrite them (you will be asked to confirm).</div>':''}
+   ${o.ow&&st.replace?'<div class="smsg warn" style="margin:6px 0"><b>'+st.replace+' existing score'+(st.replace===1?'':'s')+' will be replaced.</b> You will be asked to confirm.</div>':''}
+   <div style="display:flex;gap:18px;flex-wrap:wrap;margin:6px 0"><label style="display:flex;gap:6px;align-items:center;font-weight:400"><input type="checkbox" ${o.ow?'checked':''} onchange="xiOpt('ow',this.checked)"> Replace existing scores that differ (off = only blank cells are filled)</label>${R.hps?`<label style="display:flex;gap:6px;align-items:center;font-weight:400"><input type="checkbox" ${o.hps?'checked':''} onchange="xiOpt('hps',this.checked)"> Also copy the Highest Possible Scores row</label>`:''}</div>
+   <div style="max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:10px"><table class="gt" style="width:100%;font-size:13px"><thead><tr><th style="width:34px"></th><th>Learner in class record</th><th>Name in pasted table</th><th>Written Works</th><th>Performance Tasks</th><th>Quarterly Assessment</th><th>Match status</th><th>Existing grades</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <div class="sub" style="margin:4px 0 0">Blank cells never erase a saved score. Unmatched and ambiguous students are never imported automatically.</div>
+   ${xpMapPanel(!R.conf&&!XP.manual)}`}
+ box.innerHTML=`<h3 style="margin-top:0">Paste Grades from Excel</h3>
+  <details ${R?'':'open'} style="margin:0 0 8px;border:1px solid var(--line);border-radius:10px;padding:8px 12px"><summary style="cursor:pointer"><b>Paste instructions</b></summary><ol class="sub" style="margin:6px 0 2px 18px;padding:0;line-height:1.5">
+   <li>In Excel, select the cells you want — the whole table, only some columns, or only some student rows — and press <b>Ctrl+C</b>.</li>
+   <li>Click the box below and press <b>Ctrl+V</b>. The preview appears automatically (or press <b>Preview Imported Grades</b>).</li>
+   <li>Include the heading rows (LEARNERS’ NAMES, WRITTEN WORKS, PERFORMANCE TASKS, QUARTERLY ASSESSMENT and the 1–10 row) so the columns can be recognized. If you paste only student rows, the standard Class Record column layout is assumed and checked; if it can’t be verified you will be asked to choose the columns.</li>
+   <li>Pick the quarter and subject you are saving into, review the preview, then press <b>Confirm and Save Grades</b>.</li></ol>
+   <div class="sub" style="margin:4px 0 0">Only Written Works, Performance Tasks and Quarterly Assessment scores are imported. MALE/FEMALE rows, Highest Possible Score rows, empty rows and Total / PS / WS / Initial Grade / Quarterly Grade columns are ignored. Students are matched by name (not by position); blank cells and unmatched students are never imported over existing grades.</div></details>
+  <div class="grid2" style="margin:8px 0"><label>Quarter to save into<select onchange="xpQ(this.value)">${[1,2,3,4].map(q=>`<option value="${q}" ${q===XP.q?'selected':''}>${qn[q-1]} Quarter</option>`).join('')}</select></label><label>Subject<select onchange="xpSub(this.value)">${c.ns.map((s,i)=>`<option value="${i}" ${i===XP.sub?'selected':''}>${esc(s.n)}</option>`).join('')}</select></label></div>
+  <textarea id="xpTxt" rows="8" wrap="off" spellcheck="false" style="width:100%;font:12px/1.35 ui-monospace,Menlo,Consolas,monospace;white-space:pre;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px" placeholder="Paste copied Excel cells here (Ctrl+V)…" oninput="XP.text=this.value" onpaste="xpPasted()">${esc(XP.text)}</textarea>
+  <div style="margin:8px 0"><button class="btn y" onclick="xpAnalyze()">Preview Imported Grades</button></div>
+  ${XP.err?`<div class="smsg bad" style="margin:6px 0">${esc(XP.err)}</div>`:''}
+  ${body}
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn y" ${canSave?'':'disabled'} onclick="xpConfirm()">Confirm and Save Grades${st&&st.ready?' ('+st.ready+' score'+(st.ready===1?'':'s')+')':''}</button></div>`;
+ box.scrollTop=top}
+
 </script></body></html>
