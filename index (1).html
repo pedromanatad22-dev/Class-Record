@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="app-version" content="2026.11.11-1"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="app-version" content="2026.11.22-1"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Auto E-Class Record 2026</title>
 <style>
 :root{--navy:#0f1f3d;--yel:#f6c23e;--grn:#1fa971;--red:#d6394a;--bg:#f4f6fb;--line:#e3e7f0;--mut:#6b7590}
@@ -128,6 +128,15 @@ table.tcr td .lnk{background:none;border:0;padding:0;font:inherit;font-weight:70
 #vpView .vp-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%}#vpImg{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
 .vp-gone{color:#fff;text-align:center;max-width:360px}.vp-cap{color:#dfe6f7;font-size:13px}.vp-bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.vp-bar a.btn{text-decoration:none}
 @media print{#vpView{display:none!important}}
+.brush{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:12px 0 4px;padding:8px;border:1px solid var(--line);border-radius:10px;background:#f7f9ff}
+.brush .bb{display:inline-flex;align-items:center;gap:6px;width:auto;min-width:0;height:auto;padding:6px 10px;border-radius:999px;border:2px solid var(--line);background:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.brush .bb .bs{display:inline-block;min-width:18px;text-align:center;font-weight:800}.brush .bb.on{border-color:var(--navy);box-shadow:0 0 0 2px #0f1f3d33;background:#eef2ff}
+/* --- show / hide password --- */
+.pw-wrap{position:relative;display:block}
+.pw-wrap>input{width:100%;box-sizing:border-box;padding-right:46px!important}
+.pw-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:38px;height:36px;display:flex;align-items:center;justify-content:center;border:0;background:none;color:#5b6784;cursor:pointer;border-radius:8px;padding:0}
+.pw-eye:hover{background:#eef2ff;color:#0f1f3d}.pw-eye[aria-pressed=true]{color:#0f1f3d}
+#modal .box.wide{width:min(1000px,96vw)}
 </style></head><body>
 <aside id="side"></aside><main id="main"></main>
 <div id="modal"><div class="box" id="mbox"></div></div><div id="toast"></div><div id="printArea"></div><div id="ecrPrint"></div><div id="tcPrint"></div>
@@ -207,11 +216,12 @@ const RATE=['','Consistent','Developing','Beginning'];
 const FORMS=[['SF1','School Register','Adviser · start of year','learners'],['SF2','Daily Attendance','Adviser · daily, monthly','att'],['SF3','Books Issued & Returned','School head · start & end of year','books'],['SF4','Learner Movement & Attendance','School head · monthly'],['SF5','Promotion & Level of Proficiency','Adviser · end of year'],['SF6','Summarized Promotion Report','School head · end of year'],['SF7','Personnel Assignment List','School head · start of year'],['SF8','Health & Nutrition Report','Adviser · baseline & endline'],['SF9','Learner\'s Progress Report Card','Adviser · every term'],['SF10','Permanent Academic Record','Adviser · end of year'],['ECR','Class Record','Subject teacher · every term','record']];
 let S=load(),view='dash',tab=0,term=1,month='2026-09',dirty=false;
 function fresh(){return{cur:null,classes:[],saved:null,p:{name:'',pos:'Teacher III',school:'',sid:'',head:'',year:'SY 2026-2027'}}}
-function load(){if(SHARE)return fresh();try{return JSON.parse(localStorage.getItem(KEY))||fresh()}catch(e){return fresh()}}
-function save(manual){if(SHARE)return;try{S.saved=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(S));dirty=false}catch(e){toast('Could not save in this browser')}paintChip();if(CF.tok){clearTimeout(syncT);syncT=setTimeout(()=>cloudSync(),2500)}if(manual)toast(CF.tok?'Saved — syncing…':'Saved on this device ✓')}
+function ecrValid(o){return!!o&&typeof o==='object'&&!Array.isArray(o)&&Array.isArray(o.classes)&&o.classes.length>0&&o.classes.every(c=>c&&typeof c==='object'&&Array.isArray(c.learners))}
+function load(){if(SHARE)return fresh();let raw=null;try{raw=localStorage.getItem(KEY);const o=JSON.parse(raw);if(o===null)return fresh();if(!ecrValid(o))throw new Error('unreadable');return o}catch(e){if(raw){try{localStorage.setItem(KEY+'-unreadable',raw);setTimeout(()=>toast('Your saved data could not be read. A copy was kept in this browser. Restore a backup if you have one.',10000),1500)}catch(x){}}return fresh()}}
+var saveFail=false;function save(manual){if(SHARE)return;const prevSaved=S.saved;try{S.saved=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(S));dirty=false;saveFail=false}catch(e){S.saved=prevSaved;saveFail=true;toast('NOT SAVED: this browser has no room left. Open Settings and download a backup now.',9000);clearTimeout(save.r);save.r=setTimeout(()=>{if(saveFail&&dirty)save()},20000)}paintChip();if(CF.tok){clearTimeout(syncT);syncT=setTimeout(()=>cloudSync(),2500)}if(manual)toast(CF.tok?'Saved — syncing…':'Saved on this device ✓')}
 function commit(){dirty=true;paintChip();clearTimeout(commit.t);commit.t=setTimeout(()=>save(),600)}
-function paintChip(){const c=$('#chip');if(!c)return;c.className='chip'+(dirty?' w':'');c.textContent=dirty?'● Saving…':S.saved?'● Saved '+new Date(S.saved).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'● Not saved yet'}
-function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800)}
+function paintChip(){const c=$('#chip');if(!c)return;c.className='chip'+(dirty||saveFail?' w':'');c.textContent=saveFail?'⚠ NOT SAVED':dirty?'● Saving…':S.saved?'● Saved '+new Date(S.saved).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'● Not saved yet'}
+function toast(t,ms){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),ms||1800)}
 const C=()=>S.classes.find(c=>c.id===S.cur);
 function go(v){const keep=(view==='record'&&v==='ecrx')||(view==='ecrx'&&v==='record');view=v;if(!keep)tab=0;render()}
 function sorted(c){const k=x=>(x.last+x.first).toLowerCase();return{M:c.learners.filter(l=>l.sex==='M').sort((a,b)=>k(a)<k(b)?-1:1),F:c.learners.filter(l=>l.sex==='F').sort((a,b)=>k(a)<k(b)?-1:1)}}
@@ -221,7 +231,7 @@ $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
 function render(){
  if(SHARE)return shareRender();if(typeof pgRefresh==='function')pgRefresh();if(scan.on||scan.starting)stopScan(true);if(ensureQR())commit();
  const nav=[['dash','Dashboard',''],['h','Teacher forms'],['learners','Learners','SF1'],['record','Class Record','ECR'],['att','Attendance','SF2'],['books','Books','SF3'],['ecrx','Class Grades Record','DepEd'],['topx','Top Students & Certificates','New'],['hb','School Handbook',''],['h','School head forms'],['soon','Promotion · Health · Report Cards','SF5-10'],['set','Settings & Profile','']];
- $('#side').innerHTML=`<div class="logo"><i>SF</i><div>E-Class Record<small>SF1–SF10 · ${esc(S.p.year)}</small></div></div>`+nav.map(n=>n[0]==='h'?`<h6>${n[1]}</h6>`:`<div class="nav ${view===n[0]?'on':''}" onclick="${n[0]==='soon'?"toast('Not included in this version')":`go('${n[0]}')`}"><span>${n[1]}</span>${n[2]?`<b>${n[2]}</b>`:''}</div>`).join('')+`<p style="font-size:11px;color:#7d8db3;margin:16px 6px">Auto-saves every change on this device. Back up weekly in Settings.<br><span id="verTag">Version 2026.11.11-1 · <a href="#" style="color:inherit" onclick="updCheck(true);return false">Check for updates</a></span></p>`;
+ $('#side').innerHTML=`<div class="logo"><i>SF</i><div>E-Class Record<small>SF1–SF10 · ${esc(S.p.year)}</small></div></div>`+nav.map(n=>n[0]==='h'?`<h6>${n[1]}</h6>`:`<div class="nav ${view===n[0]?'on':''}" onclick="${n[0]==='soon'?"toast('Not included in this version')":`go('${n[0]}')`}"><span>${n[1]}</span>${n[2]?`<b>${n[2]}</b>`:''}</div>`).join('')+`<p style="font-size:11px;color:#7d8db3;margin:16px 6px">Auto-saves every change on this device. Back up weekly in Settings.<br><span id="verTag">Version 2026.11.22-1 · <a href="#" style="color:inherit" onclick="updCheck(true);return false">Check for updates</a></span></p>`;
  const c=C(),titles={dash:'Dashboard',learners:'Learners',record:'Class Record',att:'Attendance',books:'Books',ecrx:'Class Grades Record (DepEd ECR)',topx:'Top Students & Certificates',hb:'School Handbook',set:'Settings & Profile'};
  const sel=`<select onchange="S.cur=this.value;commit();render()">${S.classes.map(k=>`<option value="${k.id}" ${k.id===S.cur?'selected':''}>${esc(k.name)}</option>`).join('')||'<option>No class yet</option>'}</select>`;
  let body=''; if(!c&&view!=='set'&&view!=='dash'&&view!=='hb')body=`<div class="card">Create a class first.<br><br><button class="btn y" onclick="newClass()">+ New class</button></div>`;
@@ -254,10 +264,16 @@ function attGrid(){const c=C(),g=sorted(c),ALL=days(),A=(c.att[month]||={}),NC=A
  const all=[...g.M,...g.F],n=all.length,pr=present(all),tot=pr.reduce((a,b)=>a+b,0),avg=D.length?tot/D.length:0,pct=n?avg/n*100:0;
  const nm=g.M.length,nf=g.F.length,avgOf=L=>D.length?present(L).reduce((a,b)=>a+b,0)/D.length:0;
  const sm=[['Enrolment as of first Friday',nm,nf,n],['Registered learners, end of month',nm,nf,n],['Average daily attendance',avgOf(g.M).toFixed(2),avgOf(g.F).toFixed(2),avg.toFixed(2)],['% of attendance for the month',nm?(avgOf(g.M)/nm*100).toFixed(1):'0.0',nf?(avgOf(g.F)/nf*100).toFixed(1):'0.0',pct.toFixed(1)]];
- return `<div class="card"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div><span class="tag">SF2</span><h2 style="margin:2px 0">Daily Attendance</h2><div class="sub" style="margin:0">In the <b>Class?</b> row, tap a date to mark it ✓ (has class) or ✕ (no class). For learners, tap a box once for absent (✕), twice for tardy, three times to clear. Cutting classes (C) and Present (✓) marks come from the Photo cards and Scan QR tabs.</div></div><span class="right noprint"><input type="month" value="${month}" onchange="month=this.value;render()"><button class="btn" onclick="clearMonth()">Clear month</button><button class="btn d" onclick="window.print()">Print / Export SF2</button></span></div>
- <table class="att" style="margin-top:12px"><tr><th class="n">Learner (${D.length} school days)</th>${ALL.map(d=>`<th>${d[0]}<br>${d[1]}</th>`).join('')}<th>Absent</th><th>Tardy</th><th>Cut</th></tr><tr class="cls"><td class="n"><b>Class?</b></td>${ALL.map(([d])=>`<td><span class="cell ${NC[d]?'x':'ok'}" title="${NC[d]?'No class'+calNote(d):'Has class'}" onclick="togDay(${d})">${NC[d]?'✕':'✓'}</span></td>`).join('')}<td colspan="3"></td></tr><tr><th colspan="${ALL.length+4}" style="text-align:left">Male</th></tr>${g.M.map(row).join('')}<tr><th colspan="${ALL.length+4}" style="text-align:left">Female</th></tr>${g.F.map((l,i)=>row(l,i)).join('')}<tr><td class="n"><b>Present per day</b></td>${prAll(all).map(v=>`<td><b>${v}</b></td>`).join('')}<td colspan="3"></td></tr></table></div>
+ return `<div class="card"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div><span class="tag">SF2</span><h2 style="margin:2px 0">Daily Attendance</h2><div class="sub" style="margin:0">In the <b>Class?</b> row, tap a date to mark it ✓ (has class) or ✕ (no class). For learners, choose a mark below (Late, Cutting classes, Absent, Present), then tap the boxes. Tap a marked box again to clear it. With “Quick tap” a box cycles ✕ Absent → T Late → clear. The Photo cards and Scan QR tabs record the same marks.</div></div><span class="right noprint"><input type="month" value="${month}" onchange="month=this.value;render()"><button class="btn" onclick="clearMonth()">Clear month</button><button class="btn d" onclick="window.print()">Print / Export SF2</button></span></div>
+ ${brushBar()}<table class="att" style="margin-top:12px"><tr><th class="n">Learner (${D.length} school days)</th>${ALL.map(d=>`<th>${d[0]}<br>${d[1]}</th>`).join('')}<th>Absent</th><th>Tardy</th><th>Cut</th></tr><tr class="cls"><td class="n"><b>Class?</b></td>${ALL.map(([d])=>`<td><span class="cell ${NC[d]?'x':'ok'}" title="${NC[d]?'No class'+calNote(d):'Has class'}" onclick="togDay(${d})">${NC[d]?'✕':'✓'}</span></td>`).join('')}<td colspan="3"></td></tr><tr><th colspan="${ALL.length+4}" style="text-align:left">Male</th></tr>${g.M.map(row).join('')}<tr><th colspan="${ALL.length+4}" style="text-align:left">Female</th></tr>${g.F.map((l,i)=>row(l,i)).join('')}<tr><td class="n"><b>Present per day</b></td>${prAll(all).map(v=>`<td><b>${v}</b></td>`).join('')}<td colspan="3"></td></tr></table></div>
  <div class="card" style="max-width:460px"><h3 style="margin-top:0">Monthly summary</h3><table><tr><th>Item</th><th>M</th><th>F</th><th>Total</th></tr>${sm.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')}</table></div>`}
-function tog(id,d){const A=(C().att[month]||={}),a=(A[id]||={});a[d]=({'':'x',x:'t',t:'',p:'x',c:'x'})[a[d]||''];if(!a[d])delete a[d];commit();render()}
+var attBrush='cycle';
+function setBrush(v){attBrush=v;render()}
+function tog(id,d){const A=(C().att[month]||={}),a=(A[id]||={}),cur=a[d]||'';let nv;
+ if(attBrush==='cycle')nv=({'':'x',x:'t',t:'',p:'x',c:'x'})[cur];else if(attBrush==='clear')nv='';else nv=cur===attBrush?'':attBrush;
+ if(nv)a[d]=nv;else delete a[d];if(!Object.keys(a).length)delete A[id];commit();render()}
+function brushBar(){const B=[['cycle','Quick tap','✕ → T → clear'],['x','✕','Absent'],['t','T','Late'],['c','C','Cutting classes'],['p','✓','Present'],['clear','','Clear a box']];
+ return `<div class="noprint brush" role="group" aria-label="Mark to put in the boxes"><b>Mark:</b>${B.map(b=>`<button class="bb ${b[0]==='clear'||b[0]==='cycle'?'':'cell '+(CCLS[b[0]]||'')} ${attBrush===b[0]?'on':''}" aria-pressed="${attBrush===b[0]}" onclick="setBrush('${b[0]}')">${b[1]?`<span class="bs">${b[1]}</span> `:''}${b[2]}</button>`).join('')}</div>`}
 function togDay(d){const A=(C().att[month]||={}),nc=(A._nc||={});if(nc[d])delete nc[d];else nc[d]=1;commit();render()}
 function clearMonth(){if(confirm('Clear all attendance for this month?')){const nc=(C().att[month]||{})._nc;C().att[month]=nc?{_nc:nc}:{};commit();render()}}
 /* class record */
@@ -281,7 +297,7 @@ function calc(H,S,w){const hw=sm(H.ww),hp=sm(H.pt),tw=sm(S.ww),tp=sm(S.pt),pw=ps
 let qt=1;const SB=()=>C().ns[Math.min(tab,C().ns.length-1)],QD=(s,q)=>s.q[q]||={h:{ww:[],pt:[],qa:''},s:{}},SD=(d,id)=>d.s[id]||={ww:[],pt:[],qa:''};
 function numRec(){const c=C(),sb=SB(),g=sorted(c),L=[...g.M,...g.F];
  const tabs=`<div class="tabs noprint">${c.ns.map((x,i)=>`<span class="tab ${i===tab?'on':''}" onclick="tab=${i};render()">${esc(x.n)} <b title="Rename subject" onclick="event.stopPropagation();renSubj(${i})">✎</b><b title="Remove subject" onclick="event.stopPropagation();delSubj(${i})">×</b></span>`).join('')}<span class="tab" onclick="subjDlg(-1)">+ Subject</span></div><div class="tabs noprint">${[1,2,3,4].map(q=>`<span class="tab t2 ${q===qt?'on':''}" onclick="qt=${q};render()">${['1st','2nd','3rd','4th'][q-1]} Quarter</span>`).join('')}<span class="tab t2 ${qt===5?'on':''}" onclick="qt=5;render()">Final grades</span></div>`;
- const head=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div><span class="tag">ECR</span><h2 style="margin:2px 0">${esc(sb.n)}</h2><div class="sub" style="margin:0">${[['Written Works',0],['Performance Tasks',1],['Quarterly Assessment',2]].map(([n,k])=>`${n} <input class="wi" type="number" min="0" max="100" value="${sb.w[k]}" onchange="setW(${k},this.value)">%`).join(' · ')} ${sb.w[0]+sb.w[1]+sb.w[2]===100?'':'<b class="x">Total must be 100%</b>'} <button class="btn noprint" onclick="applyW()">Apply to all subjects in this class</button></div></div><span class="right noprint"><button class="btn" onclick="subjDlg(-1)">+ Subject</button><button class="btn" onclick="subjDlg(${tab})">Rename / weights</button><button class="btn" onclick="C().mode='desc';commit();render()">Use descriptive grading</button><button class="btn d" onclick="window.print()">Print / Export</button></span></div>`;
+ const head=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div><span class="tag">ECR</span><h2 style="margin:2px 0">${esc(sb.n)}</h2><div class="sub" style="margin:0">${[['Written Works',0],['Performance Tasks',1],['Quarterly Assessment',2]].map(([n,k])=>`${n} <input class="wi" type="number" min="0" max="100" value="${sb.w[k]}" onchange="setW(${k},this.value)">%`).join(' · ')} ${sb.w[0]+sb.w[1]+sb.w[2]===100?'':'<b class="x">Total must be 100%</b>'} <button class="btn noprint" onclick="applyW()">Apply to all subjects in this class</button></div></div><span class="right noprint"><button class="btn g" onclick="xiOpen()" title="Upload a DepEd Class Record Excel and copy scores to matching learners">⬆ Upload Excel scores</button><button class="btn" onclick="subjDlg(-1)">+ Subject</button><button class="btn" onclick="subjDlg(${tab})">Rename / weights</button><button class="btn" onclick="C().mode='desc';commit();render()">Use descriptive grading</button><button class="btn d" onclick="window.print()">Print / Export</button></span></div>`;
  if(qt===5)return `<div class="card">${head}${tabs}${finals(c,sb,L)}</div>`;
  const d=QD(sb,qt),H=d.h,ip=(k,i,v,r)=>`<td><input class="sc" inputmode="decimal" data-r="${r}" data-c="${k==='ww'?i:k==='pt'?10+i:20}" data-k="${k}" data-i="${i}" value="${esc(v??'')}" oninput="scIn(this)" onkeydown="scKey(event)" onpaste="scPaste(event)"></td>`;
  const rp=(k,r,A)=>Array.from({length:10},(_,i)=>ip(k,i,A[k][i],r)).join(''),cc=f=>`<td data-f="${f}"></td>`,ths=n=>Array.from({length:n},(_,i)=>`<th>${i+1}</th>`).join('');
@@ -310,13 +326,13 @@ const SK='ecr-sync';let CF=SHARE?{}:(()=>{try{return JSON.parse(localStorage.get
 async function sbAuth(path,body){const r=await fetch(base()+'/auth/v1/'+path,{method:'POST',headers:sbH(),body:JSON.stringify(body)}),j=await r.json();if(!r.ok)throw new Error(j.msg||j.error_description||j.message||'Request failed');return j}
 function setSess(j){Object.assign(CF,{tok:j.access_token,ref:j.refresh_token,uid:j.user.id,email:j.user.email,exp:Date.now()+(j.expires_in-60)*1000});cfSave()}
 async function token(){if(!CF.tok)throw new Error('Not signed in');if(Date.now()>CF.exp)setSess(await sbAuth('token?grant_type=refresh_token',{refresh_token:CF.ref}));return CF.tok}
-async function cloudAuth(up){CF.url=$('#cu').value.trim();try{CF.url=new URL(CF.url).origin}catch(e){}CF.key=$('#ck').value.trim();const em=$('#ce').value.trim(),pw=$('#cp').value;try{if(!/^https:\/\//.test(CF.url)||!CF.key||!em||!pw)throw new Error('Fill in project URL, key, email and password');if(up){const j=await sbAuth('signup',{email:em,password:pw});if(!j.access_token){CF.email=em;cfSave();return toast('Check your email to confirm, then sign in')}setSess(j)}else setSess(await sbAuth('token?grant_type=password',{email:em,password:pw}));await cloudSync(true);render()}catch(e){toast(e.message)}}
+async function cloudAuth(up){CF.url=$('#cu').value.trim();try{CF.url=new URL(CF.url).origin}catch(e){}CF.key=$('#ck').value.trim();const em=$('#ce').value.trim(),pw=$('#cp').value;try{if(!/^https:\/\//.test(CF.url)||!CF.key||!em||!pw)throw new Error('Fill in project URL, key, email and password');if(up){const j=await sbAuth('signup',{email:em,password:pw});if(!j.access_token){CF.email=em;cfSave();return toast('Check your email to confirm, then sign in')}setSess(j)}else setSess(await sbAuth('token?grant_type=password',{email:em,password:pw}));await cloudSync(true);render()}catch(e){const bad=/invalid login/i.test(e.message);toast(bad?'Wrong email or password. If you forgot it, tap “Forgot password?”.':e.message,bad?7000:undefined)}}
 async function push(t,u){const r=await fetch(u+'?on_conflict=user_id',{method:'POST',headers:{...sbH(t),Prefer:'resolution=merge-duplicates'},body:JSON.stringify({user_id:CF.uid,data:S,updated_at:new Date().toISOString()})});if(!r.ok)throw new Error('Upload failed ('+r.status+')')}
 async function cloudSync(first){if(SHARE||!CF.tok||cloudSync.busy)return;cloudSync.busy=1;try{const t=await token(),u=base()+'/rest/v1/records',r=await fetch(u+'?select=data',{headers:sbH(t)});if(!r.ok)throw new Error('Download failed ('+r.status+') — did you run the setup SQL?');const rows=await r.json(),rem=rows[0]&&rows[0].data;
  if(rem&&(rem.saved||'')>(S.saved||'')){if(!first||!S.classes.length||confirm('The cloud copy is newer than this device. Replace this device with the cloud copy?')){S=rem;localStorage.setItem(KEY,JSON.stringify(S));render()}}
  else if(!rem||(S.saved||'')>(rem.saved||'')){if(!rem||!first||confirm('This device is newer than the cloud copy. Upload and replace the cloud copy?'))await push(t,u)}
  await pullShared();syncMsg='Synced '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch(e){syncMsg='Sync error: '+e.message}finally{cloudSync.busy=0;const m=$('#smsg');if(m)m.textContent=syncMsg}}
-function cloudCard(){const on=!!CF.tok;return `<div class="card"><h3 style="margin-top:0">☁ Cloud sync (use on any device)</h3>${on?`<p>Signed in as <b>${esc(CF.email)}</b> · <span id="smsg" class="sub">${esc(syncMsg)}</span></p><button class="btn g" onclick="cloudSync(true).then(render)">Sync now</button> <button class="btn r" onclick="CF.tok=CF.ref=null;cfSave();render()">Sign out</button>`:`<div class="grid2"><label>Supabase project URL<input id="cu" value="${esc(CF.url||'')}" placeholder="https://xxxx.supabase.co"></label><label>Anon public key<input id="ck" value="${esc(CF.key||'')}"></label><label>Email<input id="ce" type="email" value="${esc(CF.email||'')}"></label><label>Password<input id="cp" type="password"></label></div><p><button class="btn g" onclick="cloudAuth(0)">Sign in</button> <button class="btn" onclick="cloudAuth(1)">Create account</button></p>`}<details><summary>One-time setup</summary><ol class="sub"><li>Create a free project at supabase.com.</li><li>SQL Editor: run the SQL below.</li><li>Project Settings → API: copy the Project URL and the anon public key into the boxes above.</li><li>Authentication → Providers → Email: turn off "Confirm email" (or confirm through the email link).</li><li>On every device: open this HTML, enter the same URL, key, email and password, then Sign in.</li></ol><pre style="white-space:pre-wrap;background:#f1f4fb;padding:8px;border-radius:8px;font-size:12px">create table records (user_id uuid primary key references auth.users on delete cascade, data jsonb not null, updated_at timestamptz default now());
+function cloudCard(){const on=!!CF.tok;return `<div class="card"><h3 style="margin-top:0">☁ Cloud sync (use on any device)</h3>${on?`<p>Signed in as <b>${esc(CF.email)}</b> · <span id="smsg" class="sub">${esc(syncMsg)}</span></p><button class="btn g" onclick="cloudSync(true).then(render)">Sync now</button> <button class="btn" onclick="pwDialog()">Change password</button> <button class="btn r" onclick="CF.tok=CF.ref=null;cfSave();render()">Sign out</button>`:`<div class="grid2"><label>Supabase project URL<input id="cu" value="${esc(CF.url||'')}" placeholder="https://xxxx.supabase.co"></label><label>Anon public key<input id="ck" value="${esc(CF.key||'')}"></label><label>Email<input id="ce" type="email" value="${esc(CF.email||'')}"></label><label>Password<input id="cp" type="password"></label></div><p><button class="btn g" onclick="cloudAuth(0)">Sign in</button> <button class="btn" onclick="cloudAuth(1)">Create account</button> <button class="btn" onclick="cloudForgot()">Forgot password?</button></p><p class="sub" style="margin:0 0 8px">Forgot your password? Fill in the URL, key and email, then tap <b>Forgot password?</b>. This app never stores your password, so it cannot show it.</p>`}<details><summary>One-time setup</summary><ol class="sub"><li>Create a free project at supabase.com.</li><li>SQL Editor: run the SQL below.</li><li>Project Settings → API: copy the Project URL and the anon public key into the boxes above.</li><li>Authentication → Providers → Email: turn off "Confirm email" (or confirm through the email link).</li><li>To allow “Forgot password?”: Authentication → URL Configuration → set Site URL to the address of this app and add the same address under Redirect URLs.</li><li>On every device: open this HTML, enter the same URL, key, email and password, then Sign in.</li></ol><pre style="white-space:pre-wrap;background:#f1f4fb;padding:8px;border-radius:8px;font-size:12px">create table records (user_id uuid primary key references auth.users on delete cascade, data jsonb not null, updated_at timestamptz default now());
 alter table records enable row level security;
 create policy "own row" on records for all using (auth.uid()=user_id) with check (auth.uid()=user_id);</pre><p class="sub">The last device to save wins, so let it sync before you switch devices. Learner names and grades are stored on Supabase's servers: check your school's data-privacy rules first.</p></details></div>`}
 /* settings */
@@ -325,7 +341,12 @@ function set(){const f=(l,k)=>`<label>${l}<input value="${esc(S.p[k])}" oninput=
  <div class="card"><h3 style="margin-top:0">Default grading weights</h3><p class="sub">Used for new subjects. Each subject can still be changed in Class Record.</p><div class="grid2">${['Written Works','Performance Tasks','Quarterly Assessment'].map((n,k)=>`<label>${n} %<input type="number" min="0" max="100" value="${(S.p.dw||[25,50,25])[k]}" onchange="setDW(${k},this.value)"></label>`).join('')}</div>${(S.p.dw||[25,50,25]).reduce((a,b)=>a+b,0)===100?'':'<b class="x">Total must be 100%</b>'}</div>
  ${cloudCard()}<div class="card"><h3 style="margin-top:0">Backup &amp; restore</h3><p class="sub">Download a backup weekly. Restore it on another laptop to continue.</p><button class="btn g" onclick="backup()">⬇ Download backup (.json)</button> <label class="btn" style="display:inline-block;cursor:pointer">Restore backup<input type="file" accept=".json" hidden onchange="restore(this.files[0])"></label> <button class="btn r" onclick="if(confirm('Erase ALL records on this device?')){S=fresh();save();render()}">Start fresh (erase all)</button></div>`}
 function backup(){save();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='e-class-record-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Backup downloaded ✓')}
-function restore(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{S=JSON.parse(r.result);save();render();toast('Backup restored ✓')}catch(e){toast('That file is not a valid backup')}};r.readAsText(f)}
+function restore(f){if(!f)return;const r=new FileReader();r.onload=()=>{let o=null;try{o=JSON.parse(r.result)}catch(e){}
+ if(!ecrValid(o))return toast('That file is not a valid backup. Your data was not changed.',6000);
+ const n=x=>x.classes.length+' class'+(x.classes.length===1?'':'es')+', '+x.classes.reduce((a,c)=>a+c.learners.length,0)+' learners';
+ if(!confirm('Replace ALL data on this device with this backup ('+n(o)+')?\n\nCurrent data: '+n(S)+'. A copy of the current data is kept in this browser first.'))return;
+ try{localStorage.setItem(KEY+'-before-restore',JSON.stringify(S))}catch(e){}
+ if(!o.classes.some(c=>c.id===o.cur))o.cur=o.classes[0].id;S=o;save();render();toast('Backup restored ✓')};r.readAsText(f)}
 /* ===== Added upgrade: learner photos, QR codes, photo attendance, camera scanning ===== */
 const ST={p:['✓','Present'],x:['X','Absent'],t:['L','Late'],c:['C','Cutting classes']};
 const CCLS={x:'x',t:'t',c:'cc',p:'pm'},CCH={x:'✕',t:'T',c:'C',p:'✓'};
@@ -1530,7 +1551,7 @@ function tcHeader(s,sizeA,sizeB,topT){const logo=s.logo||TC_LOGO;
  +tcA(650,100,296,50,'',tcFx(esc(s.tag),34,`font:800 34px/1.2 ${F_BODY};color:#d9b560;letter-spacing:.5px`,296))
  +tcA(960,topT,600,sizeA,'',tcFx('__T1__',sizeA,`font:700 ${sizeA}px/1 ${F_HEAD};color:#fff;text-transform:uppercase;height:${sizeA}px`,600))
  +tcA(960,topT+sizeA*.92,600,sizeB,'',tcFx('__T2__',sizeB,`font:700 ${sizeB}px/1 ${F_HEAD};color:#d9b560;text-transform:uppercase;height:${sizeB}px`,600))}
-function tcStrip(m,extra){const t=(m.cat==='subject'?'SUBJECT RANKING · '+m.subj:'OVERALL ACADEMIC RANKING')+' · '+m.bl+' · S.Y. '+m.year+' · '+m.c.name+(extra?' · '+extra:'');return esc(t.toUpperCase())}
+function tcStrip(m,extra){const t=(m.cat==='subject'?'SUBJECT RANKING · '+m.subj:'OVERALL ACADEMIC RANKING')+' · '+m.bl+(m.year?' · S.Y. '+m.year:'')+' · '+m.c.name+(extra?' · '+extra:'');return esc(t.toUpperCase())}
 /* one student per page, laid out like the supplied poster */
 function tcSpot(m,r){const s=SCH(),nm=tcName(r.l),nsz=nm.length>26?30:nm.length>20?34:nm.length>14?38:40,navy=s.navy;
  const lab1=m.cat==='subject'?esc(m.subj.toUpperCase()):'ACADEMIC AVERAGE',lab2=m.cat==='subject'?m.glabel:'';
@@ -1576,7 +1597,7 @@ function tcCertBg(a){const g=`<linearGradient id="tcC1" x1="0" y1="0" x2="1" y2=
  ${gold('M45,160L140,255L45,350L-50,255Z')}${gold('M75,335L172,432L75,529L-22,432Z')}${gold('M-10,566L190,760L255,694L120,560')}
  ${gold('M830,0L1123,293')}${gold('M868,0L1123,255')}${gold('M1123,330L1046,253L968,330L1046,407L1123,330')}${gold('M1123,420L1085,382L1040,427L1085,472')}
  ${gold('M318,794L405,712L498,794')}${gold('M1060,794L1123,731')}</svg>`)}
-function tcCertHTML(rec){const a=rec.accent||{blue:TC_DEF.blue,purple:TC_DEF.purple},logo=rec.logo||TC_LOGO,len=Math.max(1,rec.name.length),nfs=Math.max(40,Math.min(80,Math.floor(1650/len))),pfs=rec.text.length>260?18:rec.text.length>200?20:22;
+function tcCertHTML(rec){rec={...rec,tsig:tcImgOf(rec.tsig),psig:tcImgOf(rec.psig),seal:tcImgOf(rec.seal)};const a=rec.accent||{blue:TC_DEF.blue,purple:TC_DEF.purple},logo=rec.logo||TC_LOGO,len=Math.max(1,rec.name.length),nfs=Math.max(40,Math.min(80,Math.floor(1650/len))),pfs=rec.text.length>260?18:rec.text.length>200?20:22;
  const sig=(x,name,role,img)=>tcA(x-130,574,260,66,'display:flex;align-items:flex-end;justify-content:center',img?`<img src="${img}" alt="" style="max-height:64px;max-width:240px;object-fit:contain">`:'')+tcA(x-130,640,260,2,'background:#111')+tcA(x-150,650,300,22,`font:700 15px/1.2 ${F_BODY};color:#111;text-align:center;text-transform:uppercase`,esc(name||'')+(name?'':'&nbsp;'))+tcA(x-150,672,300,22,`font:500 15px/1.2 ${F_BODY};color:#111;text-align:center`,esc(role||''));
  return tcCertBg(a)+tcA(112,62,520,40,`font:800 15.5px/1.25 ${F_BODY};color:#111;text-transform:uppercase`,esc(rec.school))
   +tcA(604,26,106,100,'',`<img src="${logo}" alt="" style="width:100%;height:100%;object-fit:contain">`)
@@ -1594,10 +1615,10 @@ function tcCertHTML(rec){const a=rec.accent||{blue:TC_DEF.blue,purple:TC_DEF.pur
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 function tcRec(m,r){const s=SCH(),c=m.c,sbj=m.cat==='subject'?c.ns[m.si]:null,t=(sbj&&sbj.teacher)||{},P=S.p||{},dt=s.date||todayISO(),[Y,M,D]=dt.split('-');
  const teacher=m.cat==='subject'?(t.name||P.name||''):(P.name||''),trole=m.cat==='subject'?(t.role||s.trole):s.arole,principal=s.principal||P.head||'';
- const v={name:tcNice(r.l),grade:r.disp,rank:String(r.rank),subject:sbj?sbj.n:'',period:tcPhrase(m.b),year:m.year,section:c.name,school:s.name,campus:s.campus,teacher,principal,day:s.dayBlank?'____':String(+D),month:MONTHS[+M-1]||'',year4:Y};
+ const v={name:tcNice(r.l),grade:r.disp,rank:String(r.rank),subject:sbj?sbj.n:'',period:tcPhrase(m.b),year:m.year||'________',section:c.name,school:s.name,campus:s.campus,teacher,principal,day:s.dayBlank?'____':String(+D),month:MONTHS[+M-1]||'',year4:Y};
  const text=tcFill(m.cat==='subject'?s.wSubj:s.wAll,v)+' '+tcFill(s.given,v);
  return{lid:r.l.id,name:v.name,cid:c.id,cls:c.name,cat:m.cat,bk:m.b,sidx:m.si,subj:v.subject,basis:m.bl,year:m.year,rank:r.rank,grade:r.disp,text,school:s.name,campus:s.campus,address:s.address,teacher,trole,principal,prole:s.prole,tsig:m.cat==='subject'?(t.sig||''):'',psig:s.psig,seal:s.seal,date:dt,accent:{blue:s.blue,purple:s.purple}}}
-const tcKey=r=>JSON.stringify([r.name,r.rank,r.grade,r.text,r.teacher,r.trole,r.principal,r.prole,r.school,r.campus,r.date,!!r.tsig,!!r.psig,!!r.seal,r.address,r.accent]);
+const tcKey=r=>JSON.stringify([r.name,r.rank,r.grade,r.text,r.teacher,r.trole,r.principal,r.prole,r.school,r.campus,r.date,tcImgKey(r.tsig),tcImgKey(r.psig),tcImgKey(r.seal),r.address,r.accent]);
 const tcIKey=r=>[r.lid,r.cid,r.cat,r.subj,r.basis,r.year].join('|');
 const tcMissing=r=>{const o=[];if(!r.school)o.push('the school name');if(!r.campus)o.push('the campus');if(!r.teacher)o.push('the teacher\u2019s name');if(!r.principal)o.push('the principal\u2019s name');return o};
 /* ---------- fit previews, pages, printing ---------- */
@@ -1635,12 +1656,12 @@ function tcCerts(ids,pdf){const m=tcModel();if(!m||m.err)return tcMsg(m?m.err:'C
  recs.forEach(rec=>{const ik=tcIKey(rec),key=tcKey(rec),prev=S.certs.filter(x=>x.ikey===ik);if(prev.some(x=>x.key===key)){use.push(prev.find(x=>x.key===key));return}if(prev.length)changed.push({rec,last:prev[prev.length-1]});else use.push({rec,fresh:true})});
  let reissue=true;if(changed.length)reissue=confirm(changed.length+' certificate'+(changed.length===1?' was':'s were')+' issued before with different details (for example '+changed[0].rec.name+': issued Rank '+changed[0].last.rank+', '+changed[0].last.grade+'; now Rank '+changed[0].rec.rank+', '+changed[0].rec.grade+').\n\nOK = issue new ones with the current details.\nCancel = reprint the certificates exactly as they were issued before.');
  changed.forEach(x=>use.push(reissue?{rec:x.rec,fresh:true}:x.last));
- const final=use.map(u=>{if(u.fresh){const e={id:uid(),at:new Date().toISOString(),ikey:tcIKey(u.rec),key:tcKey(u.rec),...u.rec};S.certs.push(e);return e}return u});
+ const final=use.map(u=>{if(u.fresh){const e={id:uid(),at:new Date().toISOString(),ikey:tcIKey(u.rec),key:tcKey(u.rec),...u.rec,tsig:tcIntern(u.rec.tsig),psig:tcIntern(u.rec.psig),seal:tcIntern(u.rec.seal)};S.certs.push(e);return e}return u});
  if(use.some(u=>u.fresh))commit();
  const logo=SCH().logo;tcPrintPages(()=>tcMeasured(final.map(e=>tcCertHTML({...e,logo})),CW,CH).map(p=>tcPageHTML(p,CW,CH,'#fff')).join(''),(final.length===1?'Certificate - '+final[0].name:'Certificates - '+m.c.name+' - '+m.bl).replace(/[^\w\- ]+/g,''));
  if(pdf)toast('In the print window choose "Save as PDF" as the destination')}
 function tcReprint(id){const e=(S.certs||[]).find(x=>x.id===id);if(!e)return;tcPrintPages(()=>tcMeasured([tcCertHTML({...e,logo:SCH().logo})],CW,CH).map(p=>tcPageHTML(p,CW,CH,'#fff')).join(''),'Certificate - '+e.name.replace(/[^\w\- ]+/g,''))}
-function tcDelCert(id){if(!confirm('Remove this entry from the issued-certificates record? The printed certificate itself is not affected.'))return;S.certs=(S.certs||[]).filter(x=>x.id!==id);if(!S.certs.length)delete S.certs;commit();render()}
+function tcDelCert(id){if(!confirm('Remove this entry from the issued-certificates record? The printed certificate itself is not affected.'))return;S.certs=(S.certs||[]).filter(x=>x.id!==id);if(!S.certs.length)delete S.certs;tcGcImgs();commit();render()}
 /* ---------- controls ---------- */
 function tcSet(k,v){if(k==='grade'){const f=S.classes.find(c=>(c.grade||'')===v);if(f)tc.cid=f.id;tc.si=0;tc.b='auto'}
  else if(k==='cid'){tc.cid=v;tc.si=0;tc.b='auto'}else if(k==='cat'){tc.cat=v;tc.b='auto'}else if(k==='si'){tc.si=+v;tc.b='auto'}else if(k==='b')tc.b=/^\d$/.test(v)?+v:v;else if(k==='n')tc.n=v==='all'?'all':+v;else tc[k]=v;
@@ -1669,7 +1690,7 @@ function tcResetWording(){schSet('wSubj','');schSet('wAll','');schSet('given',''
 /* ---------- the page ---------- */
 function tcWhy(m,id){const r=m.rows.find(x=>x.l.id===id);if(r){if(r.elig)return'';if(r.rank>m.N)return`Ranked ${r.rank}, which is outside the Top ${m.N}.`;if(r.tied&&m.pol==='unique')return`Tied at rank ${r.rank}. Your recognition policy gives certificates only to students with a unique rank (change it in the settings).`}
  const n=m.none.find(x=>x.l.id===id);return n?'Not ranked: '+n.why+'.':'Not in this ranking.'}
-function topView(){tcFonts();if(!tc.cid||!S.classes.some(c=>c.id===tc.cid))tc.cid=(C()||S.classes[0]).id;
+function topView(){tcFonts();tcMigrate();if(!tc.cid||!S.classes.some(c=>c.id===tc.cid))tc.cid=(C()||S.classes[0]).id;
  const c=tcCls(),m=tcModel(),s=SCH(),grades=[...new Set(S.classes.map(x=>x.grade||''))],inGrade=S.classes.filter(x=>(x.grade||'')===(c.grade||'')),yr=S.p&&S.p.year?String(S.p.year):'(not set)';
  const sel=(id,label,opts,cur,fn)=>`<label style="width:auto;margin:0">${label}<select id="${id}" onchange="${fn}" aria-label="${label}">${opts.map(o=>`<option value="${esc(String(o[0]))}" ${String(o[0])===String(cur)?'selected':''}>${esc(o[1])}</option>`).join('')}</select></label>`;
  let h=`<div class="card"><h3 style="margin:0 0 8px">🏆 Top Students &amp; Certificates</h3><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
@@ -1734,7 +1755,7 @@ function topView(){tcFonts();if(!tc.cid||!S.classes.some(c=>c.id===tc.cid))tc.ci
 /* ===== Version and update check =====
    When a newer index.html is uploaded to the website, devices that still hold the old copy are told to reload. Saved records
    live in the browser for the site address and are not touched by an update. */
-const APP_VERSION='2026.11.11-1';
+const APP_VERSION='2026.11.22-1';
 async function updFetchVersion(){try{const url=location.href.split('#')[0].split('?')[0],r=await fetch(url,{cache:'no-store',headers:{Range:'bytes=0-3999'}});if(!r.ok)return null;
  let txt='';if(r.body&&r.body.getReader){const rd=r.body.getReader(),x=await rd.read();txt=new TextDecoder().decode(x.value||new Uint8Array());try{rd.cancel()}catch(e){}}else txt=(await r.text()).slice(0,4000);
  const m=/<meta name="app-version" content="([^"]+)"/.exec(txt);return m?m[1]:null}catch(e){return null}}
@@ -1791,18 +1812,19 @@ function vioNew(lid){vioForm={lid,id:null,date:todayISO(),type:VIO_TYPES[0],othe
 function vioEdit(lid,id){const l=findL(lid),v=l&&(l.vio||[]).find(x=>x.id===id);if(!v)return;const std=VIO_TYPES.includes(v.type);vioForm={lid,id,date:v.date,type:std?v.type:'Other',other:std?'':v.type,desc:v.desc||'',act:v.action||'',st:v.status||'Under Review',keep:(v.photos||[]).map(p=>({...p})),staged:[],drop:[]};paintProf(l)}
 function vpRelease(f){(f&&f.staged||[]).forEach(s=>{try{URL.revokeObjectURL(s.url)}catch(e){}})}
 function vioCancel(lid){vpRelease(vioForm);vioForm=null;const l=findL(lid);if(l)paintProf(l)}
-async function vioSave(lid){const l=findL(lid);if(!l||!vioForm||vioSave.busy)return;vioSnap();const f=vioForm,date=f.date,tp=f.type,type=tp==='Other'?((f.other||'').trim()||'Other'):tp,desc=(f.desc||'').trim(),action=(f.act||'').trim(),status=f.st;
+async function vioSave(lid){if(vioSave.busy)return;vioSave.busy=true;try{await vioSaveRun(lid)}catch(e){toast('Could not save the violation. Please try again.');console.error(e)}finally{vioSave.busy=false}}
+async function vioSaveRun(lid){const l=findL(lid);if(!l||!vioForm)return;vioSnap();const f=vioForm,date=f.date,tp=f.type,type=tp==='Other'?((f.other||'').trim()||'Other'):tp,desc=(f.desc||'').trim(),action=(f.act||'').trim(),status=f.st;
  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return toast('Choose the date of the incident');if(tp==='Other'&&!(f.other||'').trim()&&!desc)return toast('Describe the violation');
- vioSave.busy=true;const staged=f.staged||[],done=[],now=new Date().toISOString();
+ const staged=f.staged||[],done=[],now=new Date().toISOString();
  try{for(const s of staged){await vpPut(s.id,{blob:s.blob,name:s.name,w:s.w,h:s.h,at:now,lid:l.id});done.push(s.id)}}
- catch(e){for(const id of done)await vpDelBlob(id);vioSave.busy=false;return vpNote('The photos could not be stored on this device ('+String(e&&e.message||'storage is full or blocked').slice(0,80)+'). Nothing was saved yet. Try fewer or smaller photos, or free some space.')}
+ catch(e){for(const id of done)await vpDelBlob(id);return vpNote('The photos could not be stored on this device ('+String(e&&e.message||'storage is full or blocked').slice(0,80)+'). Nothing was saved yet. Try fewer or smaller photos, or free some space.')}
  let v=f.id&&(l.vio||[]).find(x=>x.id===f.id);
  if(v){const changed=v.type!==type||(v.desc||'')!==desc;Object.assign(v,{date,type,desc,action,status});if(changed)v.ref=undefined}
  else{v={id:uid(),date,type,desc,action,status,created:now};(l.vio=l.vio||[]).push(v)}
  const photos=(f.keep||[]).concat(staged.map(s=>({id:s.id,name:s.name,w:s.w,h:s.h,at:now})));if(photos.length)v.photos=photos;else delete v.photos;
  (f.drop||[]).forEach(id=>vpDelBlob(id));vpRelease(f);
  if(!v.ref&&S.hb){if(hbLocal()){try{hbApply(v)}catch(e){v.ref={status:'error',msg:String(e&&e.message||e),hb:{id:S.hb.id,ver:S.hb.ver,name:S.hb.name,sha:S.hb.sha},ts:new Date().toISOString(),verified:false}}}else hbLoad().then(()=>hbScanAll(true))}
- vioForm=null;vioSave.busy=false;commit();paintProf(l);toast('Violation saved ✓')}
+ commit();vioForm=null;paintProf(l);toast('Violation saved ✓')}
 function vioDel(lid,id){const l=findL(lid),v=l&&(l.vio||[]).find(x=>x.id===id);if(!v)return;const n=(v.photos||[]).length;if(!confirm('Delete this violation record'+(n?' and its '+n+' photo'+(n===1?'':'s'):'')+'?'))return;(v.photos||[]).forEach(p=>vpDelBlob(p.id));l.vio=(l.vio||[]).filter(x=>x.id!==id);commit();paintProf(l)}
 function delL(id){const c=C(),l=c&&c.learners.find(x=>x.id===id),ids=l?(l.vio||[]).flatMap(v=>(v.photos||[]).map(p=>p.id)):[];
  if(!confirm('Remove this learner?'+(ids.length?' Their '+ids.length+' violation photo'+(ids.length===1?'':'s')+' on this device will be removed too.':'')))return;
@@ -1810,9 +1832,12 @@ function delL(id){const c=C(),l=c&&c.learners.find(x=>x.id===id),ids=l?(l.vio||[
 /* ---------- add photos to a violation that is already saved ---------- */
 function vpAddPick(lid,vid){const i=$('#vpAdd');if(!i)return;i.dataset.lid=lid;i.dataset.vid=vid;i.click()}
 async function vpAddFiles(inp){const files=[...inp.files],lid=inp.dataset.lid,vid=inp.dataset.vid;inp.value='';const l=findL(lid),v=l&&(l.vio||[]).find(x=>x.id===vid);if(!v||!files.length)return;
- const P=v.photos||[],bad=[],add=[],ids=[];
+ const P=v.photos||[],bad=[],add=[];
  for(const file of files){if(P.length+add.length>=VP_MAX){bad.push('Only '+VP_MAX+' photos can be attached to one violation.');break}
-  try{const r=await vpCompress(file),id=uid();await vpPut(id,{blob:r.blob,name:r.name,w:r.w,h:r.h,at:new Date().toISOString(),lid:l.id});ids.push(id);add.push({id,name:r.name,w:r.w,h:r.h,at:new Date().toISOString()})}catch(e){bad.push('“'+(file.name||'photo')+'” '+(/^[A-Z]/.test(e.message)?'could not be stored':e.message)+'.');if(!/is |could not be read|processed/.test(e.message))for(const id of ids)await vpDelBlob(id)}}
+  let r;try{r=await vpCompress(file)}catch(e){bad.push('“'+(file.name||'photo')+'” '+e.message+'.');continue}
+  const id=uid(),at=new Date().toISOString();
+  try{await vpPut(id,{blob:r.blob,name:r.name,w:r.w,h:r.h,at,lid:l.id})}catch(e){bad.push('This device has no room or cannot store photos right now, so “'+(file.name||'photo')+'”'+(files.length>1?' and any photos after it were':' was')+' not saved.');break}
+  add.push({id,name:r.name,w:r.w,h:r.h,at})}
  if(add.length){v.photos=P.concat(add);commit();const l2=findL(lid);if(l2)paintProf(l2);toast(add.length+' photo'+(add.length===1?'':'s')+' saved ✓')}
  if(bad.length)vpNote(bad.join(' '))}
 /* ---------- viewer ---------- */
@@ -1827,7 +1852,191 @@ function vpClose(){const o=$('#vpView');if(o)o.remove();vpv=null}
 async function vpDeleteOne(){const l=findL(vpv.lid),v=l&&(l.vio||[]).find(x=>x.id===vpv.vid);if(!v)return;const p=v.photos[vpv.i];if(!p||!confirm('Delete this photo from the violation record?'))return;
  await vpDelBlob(p.id);v.photos=v.photos.filter(x=>x.id!==p.id);if(!v.photos.length)delete v.photos;commit();const l2=findL(vpv.lid);if(l2)paintProf(l2);if(!v.photos)vpClose();else{vpv.i=Math.min(vpv.i,v.photos.length-1);vpPaint()}}
 document.addEventListener('keydown',e=>{if(!$('#vpView'))return;if(e.key==='Escape'){e.stopPropagation();vpClose()}else if(e.key==='ArrowLeft')vpNav(-1);else if(e.key==='ArrowRight')vpNav(1)},true);
+
+/* ===== Safety nets ===== */
+function tcHash(str){let h=2166136261>>>0;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h.toString(36)+'x'+str.length}
+function tcImgKey(v){return!v?'':String(v).startsWith('data:')?'i'+tcHash(String(v)):String(v)}
+function tcIntern(v){if(!v)return'';if(!String(v).startsWith('data:'))return v;const k=tcImgKey(v);S.cimg=S.cimg||{};S.cimg[k]=v;return k}
+function tcImgOf(v){return!v?'':String(v).startsWith('data:')?v:((S.cimg&&S.cimg[v])||'')}
+function tcGcImgs(){if(!S.cimg)return;const used=new Set();(S.certs||[]).forEach(e=>['tsig','psig','seal'].forEach(k=>e[k]&&used.add(e[k])));for(const k of Object.keys(S.cimg))if(!used.has(k))delete S.cimg[k];if(!Object.keys(S.cimg).length)delete S.cimg}
+function tcMigrate(){const L=S&&S.certs;if(!L||!L.length)return;let ch=false;for(const e of L)for(const k of['tsig','psig','seal'])if(e[k]&&String(e[k]).startsWith('data:')){e[k]=tcIntern(e[k]);ch=true}if(ch)commit()}
+try{tcMigrate()}catch(e){}
+/* if a browser never says that printing has finished (some phones), the first tap or key press brings the app back */
+try{new MutationObserver(()=>{window.__pStart=/\bpq/.test(document.body.className)?(window.__pStart||Date.now()):0}).observe(document.body,{attributes:true,attributeFilter:['class']});
+ ['pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{if(window.__pStart&&Date.now()-window.__pStart>1500&&/\bpq/.test(document.body.className)&&!(window.matchMedia&&matchMedia('print').matches)){window.__pStart=0;window.dispatchEvent(new Event('afterprint'))}},true))}catch(e){}
+
+/* ===== Forgot / change password for Cloud sync (Supabase Auth) =====
+   The password is never stored by this app. "Forgot password?" asks Supabase to email a one-time link; opening that link
+   brings the person back here with a short-lived token in the address, which is used once to set a new password. */
+const RC_MIN=6;
+async function rcCall(method,path,body,tok,q){const r=await fetch(base()+'/auth/v1/'+path+(q||''),{method,headers:{apikey:CF.key,Authorization:'Bearer '+(tok||CF.key),'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});let j={};try{j=await r.json()}catch(e){}
+ if(!r.ok)throw Object.assign(new Error(j.msg||j.error_description||j.message||'Request failed ('+r.status+')'),{status:r.status,code:j.error_code||j.code});return j}
+async function cloudForgot(){const g=id=>($(id)||{}).value||'';let url;try{url=new URL(g('#cu').trim()).origin}catch(e){}
+ if(!url||!/^https:\/\//.test(url)||!g('#ck').trim()||!g('#ce').trim())return toast('Fill in the project URL, anon key and email above, then tap Forgot password? again.',7000);
+ CF.url=url;CF.key=g('#ck').trim();CF.email=g('#ce').trim();cfSave();
+ try{await rcCall('POST','recover',{email:CF.email},null,'?redirect_to='+encodeURIComponent(location.origin+location.pathname));toast('If that email has an account, a reset link is on its way. Open the link in this same browser.',10000)}
+ catch(e){toast(e.status===429?'Too many requests. Wait a few minutes and try again.':e.message,8000)}}
+function rcIss(t){try{const j=JSON.parse(atob(String(t).split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return String(j.iss||'').replace(/\/auth\/v1.*$/,'')}catch(e){return''}}
+function rcInit(){if(SHARE)return;const h=location.hash||'';if(!/(^#|&)(type=recovery|error=|error_code=)/.test(h))return;const p=new URLSearchParams(h.slice(1));
+ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+ if(p.get('error')||p.get('error_code'))return toast('That reset link is not valid or has expired. Tap “Forgot password?” to get a new one.',10000);
+ if(p.get('type')==='recovery'&&p.get('access_token'))rcOpen(p.get('access_token'))}
+function pwFields(){return `<label>New password<input id="rcp" type="password" autocomplete="new-password"></label><label>Type it again<input id="rcq" type="password" autocomplete="new-password"></label><div id="rcm" class="smsg bad" role="alert" hidden></div>`}
+function rcOpen(tok){rcOpen.tok=tok;const need=!CF.url||!CF.key;
+ openModal(`<h3 style="margin-top:0">Choose a new password</h3><p class="sub">For your cloud sync account${CF.email?' ('+esc(CF.email)+')':''}. The password is never saved in this app.</p>${need?`<label>Supabase project URL<input id="rcu" value="${esc(CF.url||rcIss(tok))}"></label><label>Anon public key<input id="rck" value="${esc(CF.key||'')}"></label>`:''}${pwFields()}<p><button class="btn g" onclick="rcSave()">Save new password</button> <button class="btn" onclick="closeModal()">Cancel</button></p>`)}
+function pwDialog(){rcOpen.tok=null;openModal(`<h3 style="margin-top:0">Change password</h3><p class="sub">For ${esc(CF.email||'your cloud sync account')}. You stay signed in on this device.</p>${pwFields()}<p><button class="btn g" onclick="rcSave()">Save new password</button> <button class="btn" onclick="closeModal()">Cancel</button></p>`)}
+async function rcSave(){const m=$('#rcm'),say=t=>{m.textContent=t;m.hidden=false},p=$('#rcp').value,q=$('#rcq').value,rec=rcOpen.tok;
+ if(p.length<RC_MIN)return say('Use at least '+RC_MIN+' characters.');if(p!==q)return say('The two passwords are not the same.');
+ if($('#rcu')){let u;try{u=new URL($('#rcu').value.trim()).origin}catch(e){}if(!u||!/^https:\/\//.test(u)||!$('#rck').value.trim())return say('Enter the Supabase project URL and the anon public key.');CF.url=u;CF.key=$('#rck').value.trim()}
+ try{let user;if(rec){user=await rcCall('PUT','user',{password:p},rec);CF.email=user.email||CF.email;setSess(await rcCall('POST','token',{email:CF.email,password:p},null,'?grant_type=password'));rcOpen.tok=null}
+  else{await rcCall('PUT','user',{password:p},await token())}
+  closeModal();toast('Password changed ✓'+(rec?' You are signed in.':''),6000);if(rec){await cloudSync(true);render()}}
+ catch(e){say(rec&&(e.status===401||e.status===403||/jwt|expired|invalid/i.test(e.message))?'This reset link has expired or was already used. Tap “Forgot password?” to get a new one.':e.message)}
+ finally{const a=$('#rcp'),b=$('#rcq');if(a)a.value='';if(b)b.value=''}}
+setTimeout(rcInit,400);
+
+/* ===== Show / hide password: an eye button on every password box ===== */
+const PW_EYE='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const PW_EYE_OFF='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+function pwEyes(){document.querySelectorAll('input[type=password]:not([data-eye])').forEach(i=>{i.dataset.eye='1';i.setAttribute('autocapitalize','off');i.setAttribute('autocorrect','off');i.setAttribute('spellcheck','false');
+ const w=document.createElement('span');w.className='pw-wrap';i.parentNode.insertBefore(w,i);w.appendChild(i);
+ const b=document.createElement('button');b.type='button';b.className='pw-eye';b.title='Show password';b.setAttribute('aria-label','Show password');b.setAttribute('aria-pressed','false');b.innerHTML=PW_EYE;
+ b.onmousedown=e=>e.preventDefault();
+ b.onclick=()=>{const show=i.type==='password',keep=document.activeElement===i,a=i.selectionStart,z=i.selectionEnd;i.type=show?'text':'password';const back=()=>{if(keep&&document.activeElement===i){try{i.setSelectionRange(a,z)}catch(x){}}};back();setTimeout(back,0);requestAnimationFrame(back);b.setAttribute('aria-pressed',String(show));b.setAttribute('aria-label',show?'Hide password':'Show password');b.title=show?'Hide password':'Show password';b.innerHTML=show?PW_EYE_OFF:PW_EYE};
+ w.appendChild(b)})}
+try{new MutationObserver(()=>pwEyes()).observe(document.body,{childList:true,subtree:true});pwEyes()}catch(e){}
 window.addEventListener('beforeunload',e=>{if(dirty){save()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&CF.tok&&!dirty)cloudSync()});if(CF.tok)cloudSync();
 render();
+
+/* ===== Import scores from an uploaded Excel (same layout as the DepEd Class Record workbook) =====
+   Reads the 1st-4th Quarter sheets, matches every learner name to the learners already recorded in each section,
+   and copies Written Works, Performance Tasks and Quarterly Assessment ONLY for the matched learners. Each score
+   is taken from the same row as the name it belongs to, and the Excel's own Quarterly Grade is compared with the
+   grade the app works out, so you can see the scores landed on the right learner. */
+const XI={d:null,plan:[],o:{hps:true,ow:true,w:true},undo:null};
+const xiNorm=s=>String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9, ]+/g,' ').replace(/\s+/g,' ').trim();
+const xiToks=s=>xiNorm(s).split(/[ ,]+/).filter(x=>x.length>1);
+const xiKey=s=>xiToks(s).join('').split('').sort().join('');
+const xiDec=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,(m,n)=>String.fromCharCode(+n)).replace(/&#x([0-9a-f]+);/gi,(m,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,'&');
+const xiCol=s=>{let n=0;for(const ch of s)n=n*26+ch.charCodeAt(0)-64;return n};
+const xiS=v=>String(Math.round(v*1e6)/1e6);
+const xiPh=s=>/^\{.*\}$/.test(s)||/^NAME\s*\d*$/i.test(s);
+function xiShared(xml){const out=[];if(!xml)return out;const re=/<si\b[^>]*?(?:\/>|>([\s\S]*?)<\/si>)/g;let m;while((m=re.exec(xml))){let t='';(m[1]||'').replace(/<rPh\b[\s\S]*?<\/rPh>/g,'').replace(/<t\b[^>]*>([\s\S]*?)<\/t>/g,(a,b)=>{t+=b;return''});out.push(xiDec(t))}return out}
+function xiCells(xml,sh){const M=new Map(),re=/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;let m;
+ while((m=re.exec(xml))){const at=m[1],body=m[2];if(!body)continue;const ref=/\br="([A-Z]+)(\d+)"/.exec(at);if(!ref)continue;const r=+ref[2],c=xiCol(ref[1]);if(r>125||c>49)continue;
+  const t=(/\bt="(\w+)"/.exec(at)||[])[1];let v=null;
+  if(t==='inlineStr'){let s='';body.replace(/<t\b[^>]*>([\s\S]*?)<\/t>/g,(a,b)=>{s+=b;return''});v=xiDec(s)}
+  else{const mv=/<v>([\s\S]*?)<\/v>/.exec(body);if(!mv)continue;const raw=mv[1];
+   if(t==='s')v=sh[+raw]===undefined?null:sh[+raw];else if(t==='str')v=xiDec(raw);else if(t==='b')v=raw==='1';else if(t==='e')v=null;else{const n=parseFloat(raw);v=isNaN(n)?null:n}}
+  if(v!==null&&v!=='')M.set(r*100+c,v)}
+ return M}
+function xiQ(n){const u=xiNorm(n);if(/SEM/.test(u)||!/QUARTER|QTR|\bQ[1-4]\b/.test(u))return 0;for(const[r,q]of[[/\b(1ST|FIRST|Q1)\b/,1],[/\b(2ND|SECOND|Q2)\b/,2],[/\b(3RD|THIRD|Q3)\b/,3],[/\b(4TH|FOURTH|Q4)\b/,4]])if(r.test(u))return q;return 0}
+const xiPct=v=>{if(typeof v==='number')return v<=1?Math.round(v*100):Math.round(v);const m=/^\s*(\d+(?:\.\d+)?)\s*%?\s*$/.exec(String(v||''));return m?Math.round(+m[1]):null};
+async function xiRead(file){await ecrJSZip();const z=await JSZip.loadAsync(await file.arrayBuffer());
+ const f=p=>z.file(p)?z.file(p).async('string'):Promise.resolve('');
+ const wbx=await f('xl/workbook.xml');if(!wbx)throw new Error('This is not an Excel (.xlsx) workbook.');
+ const rel=await f('xl/_rels/workbook.xml.rels'),sh=xiShared(await f('xl/sharedStrings.xml')),rid={};
+ rel.replace(/<Relationship\b([^>]*)>/g,(a,at)=>{const i=/\bId="([^"]+)"/.exec(at),t=/\bTarget="([^"]+)"/.exec(at);if(i&&t)rid[i[1]]=t[1];return''});
+ const sheets=[];wbx.replace(/<sheet\b([^>]*)>/g,(a,at)=>{const n=/\bname="([^"]*)"/.exec(at),i=/\br:id="([^"]+)"/.exec(at);if(n&&i&&rid[i[1]])sheets.push({name:xiDec(n[1]),p:rid[i[1]].replace(/^\//,'').replace(/^(?!xl\/)/,'xl/')});return''});
+ const qs=[],cells={},skipped=[];
+ for(const s of sheets){const q=xiQ(s.name);if(!q){skipped.push(s.name);continue}const xml=await f(s.p);if(!xml)continue;const M=xiCells(xml,sh);
+  if(!/WRITTEN/i.test(String(M.get(9*100+7)||''))){skipped.push(s.name);continue}cells[q]=M;qs.push(q)}
+ if(!qs.length)throw new Error('No "1st Quarter" … "4th Quarter" sheets in the Class Record layout were found in this file.');
+ qs.sort();const g=(q,r,c)=>{const v=cells[q].get(r*100+c);return v===undefined?null:v},num=(q,r,c)=>{const v=g(q,r,c);return typeof v==='number'?v:null};
+ const rows=[];for(let r=14;r<=63;r++)rows.push([r,'M']);for(let r=67;r<=116;r++)rows.push([r,'F']);
+ const roster=[],warns=[],byRow=new Map();
+ for(const q of qs)for(const[r,sex]of rows){const nm=String(g(q,r,3)||'').trim();if(nm&&!xiPh(nm)&&!byRow.has(r)){const o={r,sex,name:nm,lrn:String(g(q,r,2)||'').replace(/\.0+$/,''),q:{}};byRow.set(r,o);roster.push(o)}}
+ const d={file:file.name,qs,q:{},roster,warns,skipped,hdr:{}};
+ for(const q of qs){const arr=(c0)=>Array.from({length:10},(_,i)=>num(q,11,c0+i));
+  d.q[q]={hps:{ww:arr(7),pt:arr(20),qa:num(q,11,33)}};
+  for(const x of roster){const nm=String(g(q,x.r,3)||'').trim();
+   if(nm&&!xiPh(nm)&&xiKey(nm)!==xiKey(x.name)){warns.push(`Row ${x.r}: the name on the ${q}${['st','nd','rd','th'][q-1]} Quarter sheet ("${nm}") differs from the 1st sheet ("${x.name}"). That row was skipped for this quarter.`);continue}
+   const ww=Array.from({length:10},(_,i)=>num(q,x.r,7+i)),pt=Array.from({length:10},(_,i)=>num(q,x.r,20+i)),qa=num(q,x.r,33);
+   x.q[q]={ww,pt,qa,qg:num(q,x.r,37),has:ww.some(v=>v!==null)||pt.some(v=>v!==null)||qa!==null}}}
+ const q0=qs[0];d.hdr.section=String(g(q0,7,12)||'');d.hdr.teacher=String(g(q0,7,20)||'');
+ for(const q of qs){const s=g(q,7,34);if(s){d.hdr.subject=String(s).trim();break}}
+ const w=[g(q0,11,19),g(q0,11,32),g(q0,11,35)].map(xiPct);if(w.every(v=>v!==null)&&w[0]+w[1]+w[2]===100)d.hdr.w=w;
+ return d}
+function xiFind(x,L){let best=0,hits=[];const xt=xiToks(x.name),xk=xiKey(x.name),lr=String(x.lrn||'').replace(/\D/g,'');
+ for(const l of L){const lt=xiToks((l.last||'')+' '+(l.first||'')),ll=String(l.lrn||'').replace(/\D/g,'');let k=0;
+  if(lr.length>=6&&ll===lr&&lt.some(t=>xt.includes(t)))k=4;
+  else if(xiKey((l.last||'')+' '+(l.first||''))===xk)k=3;
+  else if(lt.length&&xt.length){const sm=lt.length<=xt.length?lt:xt,lg=sm===lt?xt:lt;if(sm.length>=2&&sm.every(t=>lg.includes(t)))k=2}
+  if(k>best){best=k;hits=[l]}else if(k&&k===best)hits.push(l)}
+ if(hits.length>1){const s=hits.filter(l=>l.sex===x.sex);if(s.length)hits=s}
+ return hits.length===1?{l:hits[0],k:best}:best?{amb:true}:null}
+function xiBuild(){const d=XI.d,P=[],secT=xiToks(d.hdr.section||'');
+ for(const c of S.classes){
+  if(c.mode!=='num'||!c.ns||!c.ns.length){P.push({c,skip:'uses descriptive grading (no scores to copy into)'});continue}
+  let ms=[],amb=[];
+  for(const x of d.roster){const r=xiFind(x,c.learners||[]);if(!r)continue;if(r.amb)amb.push(x);else ms.push({x,l:r.l,k:r.k})}
+  const use={};ms.forEach(m=>(use[m.l.id]||(use[m.l.id]=[])).push(m));
+  ms=ms.filter(m=>{const g=use[m.l.id];if(g.length===1)return true;const top=Math.max(...g.map(z=>z.k));const w=g.filter(z=>z.k===top);if(w.length===1&&w[0]===m)return true;if(!w.includes(m)||w.length>1)amb.push(m.x);return false});
+  ms.sort((a,b)=>a.x.r-b.x.r);ms.forEach(m=>m.on=m.k>=3);
+  const ct=xiToks(c.name),secHit=!!secT.length&&ct.length>0&&ct.every(t=>secT.includes(t));
+  let sub=0;const sn=xiNorm(d.hdr.subject||'');
+  if(sn){const i=c.ns.findIndex(s=>{const n=xiNorm(s.n);return n&&(n===sn||n.includes(sn)||sn.includes(n))});if(i>=0)sub=i;else sub=c.id===S.cur?Math.min(tab,c.ns.length-1):0;}
+  else sub=c.id===S.cur?Math.min(tab,c.ns.length-1):0;
+  const exact=!!sn&&c.ns.some(s=>{const n=xiNorm(s.n);return n&&(n===sn||n.includes(sn)||sn.includes(n))});
+  P.push({c,ms,amb,secHit,sub,subKnown:exact||!sn,on:false})}
+ const any=P.some(p=>p.ms&&p.ms.length&&p.secHit);
+ P.forEach(p=>{if(p.ms)p.on=p.ms.length>0&&(!any||p.secHit)});
+ XI.plan=P}
+function xiHps(h,ex,on){const o={ww:[],pt:[],qa:h&&h.qa!==undefined?h.qa:''};for(let i=0;i<10;i++){o.ww[i]=on&&ex.ww[i]!==null?xiS(ex.ww[i]):(h&&h.ww&&h.ww[i]!==undefined?h.ww[i]:'');o.pt[i]=on&&ex.pt[i]!==null?xiS(ex.pt[i]):(h&&h.pt&&h.pt[i]!==undefined?h.pt[i]:'')}if(on&&ex.qa!==null)o.qa=xiS(ex.qa);return o}
+function xiArr(base,ex,ow){const o=[];for(let i=0;i<10;i++){const b=base&&base[i]!==undefined?base[i]:'';o[i]=ex[i]!==null&&(ow||E(b))?xiS(ex[i]):b}return o}
+const xiW=sb=>XI.o.w&&XI.d.hdr.w?XI.d.hdr.w:(sb?sb.w:(S.p.dw||[25,50,25]));
+function xiQG(sb,m,q){const X=m.x.q[q];if(!X||!X.has)return null;const d=sb&&sb.q&&sb.q[q]?sb.q[q]:{h:{ww:[],pt:[],qa:''},s:{}},H=xiHps(d.h,XI.d.q[q].hps,XI.o.hps),A=(d.s&&d.s[m.l.id])||{ww:[],pt:[],qa:''};
+ const Sx={ww:xiArr(A.ww,X.ww,XI.o.ow),pt:xiArr(A.pt,X.pt,XI.o.ow),qa:X.qa!==null&&(XI.o.ow||E(A.qa))?xiS(X.qa):(A.qa===undefined?'':A.qa)};return calc(H,Sx,xiW(sb)).qg}
+function xiOpen(){const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xlsm';i.onchange=()=>{if(i.files[0])xiPick(i.files[0])};i.click()}
+async function xiPick(file){try{toast('Reading '+file.name+'…',4000);XI.d=await xiRead(file);xiBuild();XI.undo=null;xiShow()}catch(e){toast('Could not read that file: '+(e&&e.message||e),7000)}}
+function xiShow(){const box=$('#mbox'),top=box.scrollTop,d=XI.d,qn=q=>['1st','2nd','3rd','4th'][q-1],o=XI.o;
+ const matchedAny=XI.plan.some(p=>p.ms&&p.ms.length);
+ const used=new Set();XI.plan.forEach(p=>p.ms&&p.ms.forEach(m=>used.add(m.x.r)));
+ const lost=d.roster.filter(x=>!used.has(x.r));
+ const cards=XI.plan.map((p,pi)=>{
+  if(p.skip)return `<div class="card" style="padding:10px;margin-bottom:8px;opacity:.7"><b>${esc(p.c.name)}</b> <span class="sub" style="margin:0">— ${esc(p.skip)}</span></div>`;
+  if(!p.ms.length)return `<div class="card" style="padding:10px;margin-bottom:8px;opacity:.7"><b>${esc(p.c.name)}</b> <span class="sub" style="margin:0">— no learner in this section matches a name in the Excel</span></div>`;
+  const sb=p.sub>=0?p.c.ns[p.sub]:null,opts=p.c.ns.map((s,i)=>`<option value="${i}" ${i===p.sub?'selected':''}>${esc(s.n)}</option>`).join('')+`<option value="-1" ${p.sub<0?'selected':''}>➕ New subject: ${esc(d.hdr.subject||'Subject')}</option>`;
+  const rows=p.ms.map((m,mi)=>{
+   const cells=d.qs.map(q=>{const X=m.x.q[q];if(!X||!X.has)return '<td style="text-align:center;color:var(--mut)">—</td>';const g=xiQG(sb,m,q);
+    const xg=X.qg,txt=g===''||g===null?'<span style="color:var(--mut)">no grade</span>':String(g);
+    if(xg===null||xg===undefined)return `<td style="text-align:center">${txt}</td>`;
+    if(g!==''&&g!==null&&Math.abs(+g-xg)<0.5)return `<td style="text-align:center"><span class="ok">✓</span> ${txt}</td>`;
+    return `<td style="text-align:center;color:var(--red);font-weight:700" title="The Excel shows ${xg}, the app works out ${g===''?'no grade':g}. Check the weights, highest possible scores or the matched learner.">⚠ ${txt} <small>(Excel ${xg})</small></td>`}).join('');
+   return `<tr><td><input type="checkbox" ${m.on?'checked':''} onchange="xiTogM(${pi},${mi},this.checked)"></td><td>${esc(m.l.last)}, ${esc(m.l.first)}</td><td>${esc(m.x.name)}</td><td>${m.k===4?'LRN':m.k===3?'Exact':'<b style="color:#c98a00">Close – check</b>'}</td>${cells}</tr>`}).join('');
+  return `<div class="card" style="padding:12px;margin-bottom:10px"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><label style="display:flex;gap:6px;align-items:center;font-size:14px;color:inherit"><input type="checkbox" ${p.on?'checked':''} onchange="xiTogC(${pi},this.checked)"><b>${esc(p.c.name)}</b></label><span class="sub" style="margin:0">${p.ms.length} learner${p.ms.length===1?'':'s'} matched${p.secHit?' · section matches the file':''}</span><label style="margin-left:auto;display:flex;gap:6px;align-items:center">Copy into subject <select onchange="xiSub(${pi},this.value)">${opts}</select></label></div>
+   ${!p.subKnown&&p.sub>=0?`<div class="sub" style="margin:4px 0;color:#7a5600">The file's subject is “${esc(d.hdr.subject)}”, which is not one of this section's subjects. Check the subject box.</div>`:''}
+   <div style="max-height:260px;overflow:auto;margin-top:8px"><table class="gt" style="font-size:12px"><tr><th></th><th style="text-align:left">Learner in app</th><th style="text-align:left">Name in Excel</th><th>Match</th>${d.qs.map(q=>`<th>${qn(q)} Qtr grade</th>`).join('')}</tr>${rows}</table></div>
+   ${p.amb.length?`<div class="sub" style="margin:6px 0 0;color:#7a5600">Skipped (more than one possible learner): ${p.amb.map(x=>esc(x.name)).join('; ')}</div>`:''}</div>`}).join('');
+ const total=XI.plan.reduce((n,p)=>n+(p.ms&&p.on?p.ms.filter(m=>m.on).length:0),0);
+ openModal(`<h3 style="margin-top:0">Import scores from Excel</h3>
+  <p class="sub" style="margin:0 0 6px"><b>${esc(d.file)}</b> · Quarters found: ${d.qs.map(qn).join(', ')}${d.hdr.section?' · Section in file: <b>'+esc(d.hdr.section)+'</b>':''}${d.hdr.subject?' · Subject: <b>'+esc(d.hdr.subject)+'</b>':''}</p>
+  <p class="sub" style="margin:0 0 8px">Only learners whose names match a learner already in the section get scores, copied from their own row in the Excel. Learners who are not in the Excel, and blank Excel cells, are left exactly as they are.</p>
+  ${d.warns.length?`<div class="smsg warn" style="margin:0 0 8px">${d.warns.slice(0,5).map(esc).join('<br>')}${d.warns.length>5?'<br>…and '+(d.warns.length-5)+' more':''}</div>`:''}
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 10px;font-size:13px">
+   <label style="display:flex;gap:6px;align-items:center;color:inherit"><input type="checkbox" ${o.hps?'checked':''} onchange="xiOpt('hps',this.checked)">Copy the Highest Possible Scores</label>
+   <label style="display:flex;gap:6px;align-items:center;color:inherit"><input type="checkbox" ${o.ow?'checked':''} onchange="xiOpt('ow',this.checked)">Replace scores already in the app</label>
+   ${d.hdr.w?`<label style="display:flex;gap:6px;align-items:center;color:inherit"><input type="checkbox" ${o.w?'checked':''} onchange="xiOpt('w',this.checked)">Use the Excel's weights (WW ${d.hdr.w[0]}% · PT ${d.hdr.w[1]}% · QA ${d.hdr.w[2]}%)</label>`:''}</div>
+  <p class="sub" style="margin:0 0 6px">The grade column compares the Excel's Quarterly Grade with the grade the app will show: <span class="ok">✓</span> means they agree.</p>
+  ${matchedAny?cards:'<div class="card">No learner name in this Excel matches a learner recorded in any section. Check the spelling of the names, or add the learners under Learners first.</div>'}
+  ${lost.length&&matchedAny?`<details style="margin:4px 0 10px"><summary class="sub" style="cursor:pointer">${lost.length} name${lost.length===1?'':'s'} in the Excel matched no one (nothing copied)</summary><div style="font-size:12px;margin-top:4px">${lost.map(x=>esc(x.name)).join('; ')}</div></details>`:''}
+  <div style="text-align:right;margin-top:10px"><button class="btn" onclick="closeModal()">Cancel</button> <button class="btn y" ${total?'':'disabled'} onclick="xiApply()">Import scores for ${total} learner${total===1?'':'s'}</button></div>`);
+ $('#mbox').classList.add('wide');$('#mbox').scrollTop=top}
+function xiTogC(i,v){XI.plan[i].on=v;xiShow()}
+function xiTogM(i,j,v){XI.plan[i].ms[j].on=v;xiShow()}
+function xiSub(i,v){XI.plan[i].sub=+v;xiShow()}
+function xiOpt(k,v){XI.o[k]=v;xiShow()}
+function xiApply(){const d=XI.d,o=XI.o,undo=[];let nS=0,nL=0;const secs=[];
+ for(const p of XI.plan){if(!p.ms||!p.on)continue;const picks=p.ms.filter(m=>m.on);if(!picks.length)continue;const c=p.c;let sb,created=false;
+  if(p.sub<0){sb={n:d.hdr.subject||'Subject '+(c.ns.length+1),w:(S.p.dw||[25,50,25]).slice(),q:{}};c.ns.push(sb);created=true}else sb=c.ns[p.sub];
+  sb.q=sb.q||{};undo.push({c,sb,q:JSON.stringify(sb.q),w:sb.w.slice(),created});
+  if(o.w&&d.hdr.w)sb.w=d.hdr.w.slice();
+  for(const q of d.qs){const D=d.q[q],dd=QD(sb,q);if(o.hps){const H=xiHps(dd.h,D.hps,true);dd.h.ww=H.ww;dd.h.pt=H.pt;dd.h.qa=H.qa}
+   for(const m of picks){const X=m.x.q[q];if(!X||!X.has)continue;const A=SD(dd,m.l.id);A.ww=xiArr(A.ww,X.ww,o.ow);A.pt=xiArr(A.pt,X.pt,o.ow);if(X.qa!==null&&(o.ow||E(A.qa)))A.qa=xiS(X.qa);nS++}}
+  nL+=picks.length;secs.push(`${esc(c.name)} → ${esc(sb.n)}: ${picks.length}`)}
+ XI.undo=undo;commit();render();
+ openModal(`<h3 style="margin-top:0">Scores imported ✓</h3><p>Scores were copied for <b>${nL}</b> learner${nL===1?'':'s'} (${nS} quarter record${nS===1?'':'s'}).</p><div class="sub">${secs.join('<br>')}</div><p class="sub">Open the Class Record to review them. Nothing else was changed.</p><div style="text-align:right"><button class="btn r" style="float:left" onclick="xiUndo()">Undo this import</button><button class="btn y" onclick="closeModal()">Done</button></div>`)}
+function xiUndo(){if(!XI.undo)return;for(const u of XI.undo){u.sb.q=JSON.parse(u.q);u.sb.w=u.w;if(u.created){const i=u.c.ns.indexOf(u.sb);if(i>=0)u.c.ns.splice(i,1)}}XI.undo=null;tab=0;commit();closeModal();render();toast('Import undone')}
+const xiClose0=closeModal;closeModal=function(){const b=$('#mbox');if(b)b.classList.remove('wide');return xiClose0.apply(this,arguments)};
 </script></body></html>
