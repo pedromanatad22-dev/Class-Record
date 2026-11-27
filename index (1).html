@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="app-version" content="2026.11.22-1"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="app-version" content="2026.11.23-1"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Auto E-Class Record 2026</title>
 <style>
 :root{--navy:#0f1f3d;--yel:#f6c23e;--grn:#1fa971;--red:#d6394a;--bg:#f4f6fb;--line:#e3e7f0;--mut:#6b7590}
@@ -136,7 +136,10 @@ table.tcr td .lnk{background:none;border:0;padding:0;font:inherit;font-weight:70
 .pw-wrap>input{width:100%;box-sizing:border-box;padding-right:46px!important}
 .pw-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:38px;height:36px;display:flex;align-items:center;justify-content:center;border:0;background:none;color:#5b6784;cursor:pointer;border-radius:8px;padding:0}
 .pw-eye:hover{background:#eef2ff;color:#0f1f3d}.pw-eye[aria-pressed=true]{color:#0f1f3d}
-#modal .box.wide{width:min(1000px,96vw)}
+/* --- own designs, poster eligibility --- */
+body.pq-tc #tcPrint{display:block;position:fixed;left:-30000px;top:0;visibility:hidden}
+@media print{body.pq-tc #tcPrint{position:static;visibility:visible;left:auto}}
+.tpl-fr{max-width:none}.pbar .btn{padding:4px 10px}code{background:#eef2ff;border-radius:4px;padding:0 4px;font-size:12px}
 </style></head><body>
 <aside id="side"></aside><main id="main"></main>
 <div id="modal"><div class="box" id="mbox"></div></div><div id="toast"></div><div id="printArea"></div><div id="ecrPrint"></div><div id="tcPrint"></div>
@@ -231,7 +234,7 @@ $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
 function render(){
  if(SHARE)return shareRender();if(typeof pgRefresh==='function')pgRefresh();if(scan.on||scan.starting)stopScan(true);if(ensureQR())commit();
  const nav=[['dash','Dashboard',''],['h','Teacher forms'],['learners','Learners','SF1'],['record','Class Record','ECR'],['att','Attendance','SF2'],['books','Books','SF3'],['ecrx','Class Grades Record','DepEd'],['topx','Top Students & Certificates','New'],['hb','School Handbook',''],['h','School head forms'],['soon','Promotion · Health · Report Cards','SF5-10'],['set','Settings & Profile','']];
- $('#side').innerHTML=`<div class="logo"><i>SF</i><div>E-Class Record<small>SF1–SF10 · ${esc(S.p.year)}</small></div></div>`+nav.map(n=>n[0]==='h'?`<h6>${n[1]}</h6>`:`<div class="nav ${view===n[0]?'on':''}" onclick="${n[0]==='soon'?"toast('Not included in this version')":`go('${n[0]}')`}"><span>${n[1]}</span>${n[2]?`<b>${n[2]}</b>`:''}</div>`).join('')+`<p style="font-size:11px;color:#7d8db3;margin:16px 6px">Auto-saves every change on this device. Back up weekly in Settings.<br><span id="verTag">Version 2026.11.22-1 · <a href="#" style="color:inherit" onclick="updCheck(true);return false">Check for updates</a></span></p>`;
+ $('#side').innerHTML=`<div class="logo"><i>SF</i><div>E-Class Record<small>SF1–SF10 · ${esc(S.p.year)}</small></div></div>`+nav.map(n=>n[0]==='h'?`<h6>${n[1]}</h6>`:`<div class="nav ${view===n[0]?'on':''}" onclick="${n[0]==='soon'?"toast('Not included in this version')":`go('${n[0]}')`}"><span>${n[1]}</span>${n[2]?`<b>${n[2]}</b>`:''}</div>`).join('')+`<p style="font-size:11px;color:#7d8db3;margin:16px 6px">Auto-saves every change on this device. Back up weekly in Settings.<br><span id="verTag">Version 2026.11.23-1 · <a href="#" style="color:inherit" onclick="updCheck(true);return false">Check for updates</a></span></p>`;
  const c=C(),titles={dash:'Dashboard',learners:'Learners',record:'Class Record',att:'Attendance',books:'Books',ecrx:'Class Grades Record (DepEd ECR)',topx:'Top Students & Certificates',hb:'School Handbook',set:'Settings & Profile'};
  const sel=`<select onchange="S.cur=this.value;commit();render()">${S.classes.map(k=>`<option value="${k.id}" ${k.id===S.cur?'selected':''}>${esc(k.name)}</option>`).join('')||'<option>No class yet</option>'}</select>`;
  let body=''; if(!c&&view!=='set'&&view!=='dash'&&view!=='hb')body=`<div class="card">Create a class first.<br><br><button class="btn y" onclick="newClass()">+ New class</button></div>`;
@@ -297,7 +300,7 @@ function calc(H,S,w){const hw=sm(H.ww),hp=sm(H.pt),tw=sm(S.ww),tp=sm(S.pt),pw=ps
 let qt=1;const SB=()=>C().ns[Math.min(tab,C().ns.length-1)],QD=(s,q)=>s.q[q]||={h:{ww:[],pt:[],qa:''},s:{}},SD=(d,id)=>d.s[id]||={ww:[],pt:[],qa:''};
 function numRec(){const c=C(),sb=SB(),g=sorted(c),L=[...g.M,...g.F];
  const tabs=`<div class="tabs noprint">${c.ns.map((x,i)=>`<span class="tab ${i===tab?'on':''}" onclick="tab=${i};render()">${esc(x.n)} <b title="Rename subject" onclick="event.stopPropagation();renSubj(${i})">✎</b><b title="Remove subject" onclick="event.stopPropagation();delSubj(${i})">×</b></span>`).join('')}<span class="tab" onclick="subjDlg(-1)">+ Subject</span></div><div class="tabs noprint">${[1,2,3,4].map(q=>`<span class="tab t2 ${q===qt?'on':''}" onclick="qt=${q};render()">${['1st','2nd','3rd','4th'][q-1]} Quarter</span>`).join('')}<span class="tab t2 ${qt===5?'on':''}" onclick="qt=5;render()">Final grades</span></div>`;
- const head=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div><span class="tag">ECR</span><h2 style="margin:2px 0">${esc(sb.n)}</h2><div class="sub" style="margin:0">${[['Written Works',0],['Performance Tasks',1],['Quarterly Assessment',2]].map(([n,k])=>`${n} <input class="wi" type="number" min="0" max="100" value="${sb.w[k]}" onchange="setW(${k},this.value)">%`).join(' · ')} ${sb.w[0]+sb.w[1]+sb.w[2]===100?'':'<b class="x">Total must be 100%</b>'} <button class="btn noprint" onclick="applyW()">Apply to all subjects in this class</button></div></div><span class="right noprint"><button class="btn g" onclick="xiOpen()" title="Upload a DepEd Class Record Excel and copy scores to matching learners">⬆ Upload Excel scores</button><button class="btn" onclick="subjDlg(-1)">+ Subject</button><button class="btn" onclick="subjDlg(${tab})">Rename / weights</button><button class="btn" onclick="C().mode='desc';commit();render()">Use descriptive grading</button><button class="btn d" onclick="window.print()">Print / Export</button></span></div>`;
+ const head=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div><span class="tag">ECR</span><h2 style="margin:2px 0">${esc(sb.n)}</h2><div class="sub" style="margin:0">${[['Written Works',0],['Performance Tasks',1],['Quarterly Assessment',2]].map(([n,k])=>`${n} <input class="wi" type="number" min="0" max="100" value="${sb.w[k]}" onchange="setW(${k},this.value)">%`).join(' · ')} ${sb.w[0]+sb.w[1]+sb.w[2]===100?'':'<b class="x">Total must be 100%</b>'} <button class="btn noprint" onclick="applyW()">Apply to all subjects in this class</button></div></div><span class="right noprint"><button class="btn" onclick="subjDlg(-1)">+ Subject</button><button class="btn" onclick="subjDlg(${tab})">Rename / weights</button><button class="btn" onclick="C().mode='desc';commit();render()">Use descriptive grading</button><button class="btn d" onclick="window.print()">Print / Export</button></span></div>`;
  if(qt===5)return `<div class="card">${head}${tabs}${finals(c,sb,L)}</div>`;
  const d=QD(sb,qt),H=d.h,ip=(k,i,v,r)=>`<td><input class="sc" inputmode="decimal" data-r="${r}" data-c="${k==='ww'?i:k==='pt'?10+i:20}" data-k="${k}" data-i="${i}" value="${esc(v??'')}" oninput="scIn(this)" onkeydown="scKey(event)" onpaste="scPaste(event)"></td>`;
  const rp=(k,r,A)=>Array.from({length:10},(_,i)=>ip(k,i,A[k][i],r)).join(''),cc=f=>`<td data-f="${f}"></td>`,ths=n=>Array.from({length:n},(_,i)=>`<th>${i+1}</th>`).join('');
@@ -810,7 +813,7 @@ const VIO_STATUS=['Under Review','Resolved','Escalated','Dismissed'];
 let hbReady=null,hbBusy=null,hbMsg=null,hbLoading=false,hbScan={on:false,total:0,done:0,failed:0},hbV=null,vioForm=null,PDFJS=null;
 
 /* --- storage: the PDF and its extracted text live in IndexedDB (not localStorage). Only small reference data is saved with the records. --- */
-function hbDb(){return hbDb.p||(hbDb.p=new Promise((ok,no)=>{if(!window.indexedDB)return no(new Error('This browser cannot store files (IndexedDB is unavailable).'));const r=indexedDB.open('ecr-handbook',2);r.onupgradeneeded=()=>{const d=r.result;for(const n of ['files','text','vphotos'])if(!d.objectStoreNames.contains(n))d.createObjectStore(n)};r.onsuccess=()=>{const d=r.result;d.onversionchange=()=>{d.close();hbDb.p=null};ok(d)};r.onblocked=()=>no(new Error('Close the other open tabs of this app, then reload this page.'));r.onerror=()=>no(r.error||new Error('Could not open file storage.'))}))}
+function hbDb(){return hbDb.p||(hbDb.p=new Promise((ok,no)=>{if(!window.indexedDB)return no(new Error('This browser cannot store files (IndexedDB is unavailable).'));const r=indexedDB.open('ecr-handbook',3);r.onupgradeneeded=()=>{const d=r.result;for(const n of ['files','text','vphotos','designs'])if(!d.objectStoreNames.contains(n))d.createObjectStore(n)};r.onsuccess=()=>{const d=r.result;d.onversionchange=()=>{d.close();hbDb.p=null};ok(d)};r.onblocked=()=>no(new Error('Close the other open tabs of this app, then reload this page.'));r.onerror=()=>no(r.error||new Error('Could not open file storage.'))}))}
 async function idb(store,mode,fn){const d=await hbDb();return new Promise((ok,no)=>{const t=d.transaction(store,mode),rq=fn(t.objectStore(store));t.oncomplete=()=>ok(rq&&rq.result);t.onerror=()=>no(t.error);t.onabort=()=>no(t.error||new Error('Storage is full or was blocked.'))})}
 const idbGet=(st,k)=>idb(st,'readonly',s=>s.get(k)),idbPut=(st,k,v)=>idb(st,'readwrite',s=>s.put(v,k)),idbDel=(st,k)=>idb(st,'readwrite',s=>s.delete(k));
 
@@ -1041,7 +1044,7 @@ function refHTML(l,v){const r=v.ref,id=`'${l.id}','${v.id}'`;
 function vioCard(l,v){return `<div class="vio" data-vid="${v.id}"><div><b>Date:</b> ${esc(fmtDate(v.date))}</div><div><b>Violation Type:</b> ${esc(v.type)}</div><div><b>Description:</b> ${esc(v.desc)||'—'}</div><div><b>Action Taken:</b> ${esc(v.action)||'—'}</div><div><b>Status:</b> ${esc(v.status||'Under Review')}</div><div style="margin:6px 0"><button class="btn" onclick="vioEdit('${l.id}','${v.id}')">Edit</button> <button class="btn r" onclick="vioDel('${l.id}','${v.id}')">Delete</button></div>${refHTML(l,v)}</div>`}
 function vioFormHTML(l){const f=vioForm;return `<div class="vio"><label>Date<input type="date" id="vDate" value="${esc(f.date)}"></label><label>Violation type<select id="vType" onchange="$('#vOther').hidden=this.value!=='Other'">${VIO_TYPES.map(t=>`<option ${t===f.type?'selected':''}>${esc(t)}</option>`).join('')}</select></label><input id="vOther" placeholder="Describe the type" value="${esc(f.other)}" ${f.type==='Other'?'':'hidden'}><label>Description<textarea id="vDesc" rows="3" placeholder="What happened?">${esc(f.desc)}</textarea></label><label>Action taken<input id="vAct" value="${esc(f.act)}"></label><label>Status<select id="vSt">${VIO_STATUS.map(t=>`<option ${t===f.st?'selected':''}>${t}</option>`).join('')}</select></label><div style="margin-top:8px"><button class="btn g" onclick="vioSave('${l.id}')">Save violation</button> <button class="btn" onclick="vioCancel('${l.id}')">Cancel</button></div></div>`}
 function vioHTML(l){const L=(l.vio||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
- return `<h4 style="margin:16px 0 6px">Violation Records <span class="tag">${L.length}</span></h4>`+(vioForm&&vioForm.lid===l.id?vioFormHTML(l):`<button class="btn y" onclick="vioNew('${l.id}')">+ Add violation</button>`)+(L.length?L.map(v=>vioCard(l,v)).join(''):'<div class="sub">No violations recorded.</div>')}
+ return `<label style="display:flex;gap:8px;align-items:center;margin:14px 0 0;font-size:13px;color:#16213a"><input type="checkbox" style="width:auto" ${l.noPoster?'':'checked'} onchange="posterElig('${l.id}',this.checked)"> Eligible for the Top Student Poster <span class="sub" style="margin:0">(untick to leave this student off posters)</span></label><h4 style="margin:16px 0 6px">Violation Records <span class="tag">${L.length}</span></h4>`+(vioForm&&vioForm.lid===l.id?vioFormHTML(l):`<button class="btn y" onclick="vioNew('${l.id}')">+ Add violation</button>`)+(L.length?L.map(v=>vioCard(l,v)).join(''):'<div class="sub">No violations recorded.</div>')}
 function vioNew(lid){vioForm={lid,id:null,date:todayISO(),type:VIO_TYPES[0],other:'',desc:'',act:'',st:'Under Review'};const l=findL(lid);if(l)paintProf(l)}
 function vioEdit(lid,id){const l=findL(lid),v=l&&(l.vio||[]).find(x=>x.id===id);if(!v)return;const std=VIO_TYPES.includes(v.type);vioForm={lid,id,date:v.date,type:std?v.type:'Other',other:std?'':v.type,desc:v.desc||'',act:v.action||'',st:v.status||'Under Review'};paintProf(l)}
 function vioCancel(lid){vioForm=null;const l=findL(lid);if(l)paintProf(l)}
@@ -1617,8 +1620,8 @@ function tcRec(m,r){const s=SCH(),c=m.c,sbj=m.cat==='subject'?c.ns[m.si]:null,t=
  const teacher=m.cat==='subject'?(t.name||P.name||''):(P.name||''),trole=m.cat==='subject'?(t.role||s.trole):s.arole,principal=s.principal||P.head||'';
  const v={name:tcNice(r.l),grade:r.disp,rank:String(r.rank),subject:sbj?sbj.n:'',period:tcPhrase(m.b),year:m.year||'________',section:c.name,school:s.name,campus:s.campus,teacher,principal,day:s.dayBlank?'____':String(+D),month:MONTHS[+M-1]||'',year4:Y};
  const text=tcFill(m.cat==='subject'?s.wSubj:s.wAll,v)+' '+tcFill(s.given,v);
- return{lid:r.l.id,name:v.name,cid:c.id,cls:c.name,cat:m.cat,bk:m.b,sidx:m.si,subj:v.subject,basis:m.bl,year:m.year,rank:r.rank,grade:r.disp,text,school:s.name,campus:s.campus,address:s.address,teacher,trole,principal,prole:s.prole,tsig:m.cat==='subject'?(t.sig||''):'',psig:s.psig,seal:s.seal,date:dt,accent:{blue:s.blue,purple:s.purple}}}
-const tcKey=r=>JSON.stringify([r.name,r.rank,r.grade,r.text,r.teacher,r.trole,r.principal,r.prole,r.school,r.campus,r.date,tcImgKey(r.tsig),tcImgKey(r.psig),tcImgKey(r.seal),r.address,r.accent]);
+ return{lid:r.l.id,name:v.name,cid:c.id,cls:c.name,cat:m.cat,bk:m.b,sidx:m.si,subj:v.subject,basis:m.bl,year:m.year,rank:r.rank,grade:r.disp,text,school:s.name,campus:s.campus,address:s.address,teacher,trole,principal,prole:s.prole,tsig:m.cat==='subject'?(t.sig||''):'',psig:s.psig,seal:s.seal,date:dt,accent:{blue:s.blue,purple:s.purple},...tplStamp()}}
+const tcKey=r=>JSON.stringify([r.name,r.rank,r.grade,r.text,r.teacher,r.trole,r.principal,r.prole,r.school,r.campus,r.date,tcImgKey(r.tsig),tcImgKey(r.psig),tcImgKey(r.seal),r.address,r.accent,r.tplHash||'']);
 const tcIKey=r=>[r.lid,r.cid,r.cat,r.subj,r.basis,r.year].join('|');
 const tcMissing=r=>{const o=[];if(!r.school)o.push('the school name');if(!r.campus)o.push('the campus');if(!r.teacher)o.push('the teacher\u2019s name');if(!r.principal)o.push('the principal\u2019s name');return o};
 /* ---------- fit previews, pages, printing ---------- */
@@ -1642,8 +1645,8 @@ window.addEventListener('afterprint',()=>{document.body.classList.remove('pq-tc'
 function tcMsg(t,kind){const e=$('#tcMsg');if(!e)return toast(t);e.className='smsg '+(kind||'bad');e.textContent=t;e.hidden=false;e.scrollIntoView({block:'nearest'});clearTimeout(tcMsg.t);tcMsg.t=setTimeout(()=>{e.hidden=true},9000)}
 /* ---------- the poster ---------- */
 function tcPosterPages(m){if(tc.layout==='spot')return m.shown.map(r=>tcSpot(m,r));const out=[],pages=Math.ceil(m.shown.length/10);for(let i=0;i<pages;i++)out.push(tcGrid(m,m.shown.slice(i*10,i*10+10),i,pages));return out}
-function tcPrintPoster(pdf){const m=tcModel();if(!m||m.err)return tcMsg(m?m.err:'Choose a class first.');if(!m.shown.length)return tcMsg('There are no ranked students to put on a poster yet.');
- const pages=tcPosterPages(m);tcPrintPages(()=>tcMeasured(pages,PW,PH).map(p=>tcPageHTML(p,PW,PH,SCH().navy)).join(''),(m.title.join(' ')+' - '+m.c.name+' - '+m.bl).replace(/[^\w\- ]+/g,''));
+function tcPrintPoster(pdf){const m0=tcModel();if(!m0||m0.err)return tcMsg(m0?m0.err:'Choose a class first.');const m=tcPosterModel(m0);if(!m.shown.length)return posterMsg(tcPosterEmpty(m0)||'There are no ranked students to put on a poster yet.');
+ const ttl=(m.title.join(' ')+' - '+m.c.name+' - '+m.bl).replace(/[^\w\- ]+/g,'');if(!tplPrintPoster(m,ttl)){const pages=tcPosterPages(m);tcPrintPages(()=>tcMeasured(pages,PW,PH).map(p=>tcPageHTML(p,PW,PH,SCH().navy)).join(''),ttl)}
  if(pdf)toast('In the print window choose "Save as PDF" as the destination')}
 /* ---------- certificates: validate, issue (snapshot), print ---------- */
 function tcCerts(ids,pdf){const m=tcModel();if(!m||m.err)return tcMsg(m?m.err:'Choose a class first.');
@@ -1658,9 +1661,9 @@ function tcCerts(ids,pdf){const m=tcModel();if(!m||m.err)return tcMsg(m?m.err:'C
  changed.forEach(x=>use.push(reissue?{rec:x.rec,fresh:true}:x.last));
  const final=use.map(u=>{if(u.fresh){const e={id:uid(),at:new Date().toISOString(),ikey:tcIKey(u.rec),key:tcKey(u.rec),...u.rec,tsig:tcIntern(u.rec.tsig),psig:tcIntern(u.rec.psig),seal:tcIntern(u.rec.seal)};S.certs.push(e);return e}return u});
  if(use.some(u=>u.fresh))commit();
- const logo=SCH().logo;tcPrintPages(()=>tcMeasured(final.map(e=>tcCertHTML({...e,logo})),CW,CH).map(p=>tcPageHTML(p,CW,CH,'#fff')).join(''),(final.length===1?'Certificate - '+final[0].name:'Certificates - '+m.c.name+' - '+m.bl).replace(/[^\w\- ]+/g,''));
+ const logo=SCH().logo,ttl=(final.length===1?'Certificate - '+final[0].name:'Certificates - '+m.c.name+' - '+m.bl).replace(/[^\w\- ]+/g,'');if(!tplPrintCerts(final,ttl))tcPrintPages(()=>tcMeasured(final.map(e=>tcCertHTML({...e,logo})),CW,CH).map(p=>tcPageHTML(p,CW,CH,'#fff')).join(''),ttl);
  if(pdf)toast('In the print window choose "Save as PDF" as the destination')}
-function tcReprint(id){const e=(S.certs||[]).find(x=>x.id===id);if(!e)return;tcPrintPages(()=>tcMeasured([tcCertHTML({...e,logo:SCH().logo})],CW,CH).map(p=>tcPageHTML(p,CW,CH,'#fff')).join(''),'Certificate - '+e.name.replace(/[^\w\- ]+/g,''))}
+function tcReprint(id){const e=(S.certs||[]).find(x=>x.id===id);if(!e)return;const ttl='Certificate - '+e.name.replace(/[^\w\- ]+/g,'');if(!tplPrintCerts([e],ttl))tcPrintPages(()=>tcMeasured([tcCertHTML({...e,logo:SCH().logo})],CW,CH).map(p=>tcPageHTML(p,CW,CH,'#fff')).join(''),ttl)}
 function tcDelCert(id){if(!confirm('Remove this entry from the issued-certificates record? The printed certificate itself is not affected.'))return;S.certs=(S.certs||[]).filter(x=>x.id!==id);if(!S.certs.length)delete S.certs;tcGcImgs();commit();render()}
 /* ---------- controls ---------- */
 function tcSet(k,v){if(k==='grade'){const f=S.classes.find(c=>(c.grade||'')===v);if(f)tc.cid=f.id;tc.si=0;tc.b='auto'}
@@ -1690,7 +1693,7 @@ function tcResetWording(){schSet('wSubj','');schSet('wAll','');schSet('given',''
 /* ---------- the page ---------- */
 function tcWhy(m,id){const r=m.rows.find(x=>x.l.id===id);if(r){if(r.elig)return'';if(r.rank>m.N)return`Ranked ${r.rank}, which is outside the Top ${m.N}.`;if(r.tied&&m.pol==='unique')return`Tied at rank ${r.rank}. Your recognition policy gives certificates only to students with a unique rank (change it in the settings).`}
  const n=m.none.find(x=>x.l.id===id);return n?'Not ranked: '+n.why+'.':'Not in this ranking.'}
-function topView(){tcFonts();tcMigrate();if(!tc.cid||!S.classes.some(c=>c.id===tc.cid))tc.cid=(C()||S.classes[0]).id;
+function topView(){tcFonts();tcMigrate();tplBoot();if(!tc.cid||!S.classes.some(c=>c.id===tc.cid))tc.cid=(C()||S.classes[0]).id;
  const c=tcCls(),m=tcModel(),s=SCH(),grades=[...new Set(S.classes.map(x=>x.grade||''))],inGrade=S.classes.filter(x=>(x.grade||'')===(c.grade||'')),yr=S.p&&S.p.year?String(S.p.year):'(not set)';
  const sel=(id,label,opts,cur,fn)=>`<label style="width:auto;margin:0">${label}<select id="${id}" onchange="${fn}" aria-label="${label}">${opts.map(o=>`<option value="${esc(String(o[0]))}" ${String(o[0])===String(cur)?'selected':''}>${esc(o[1])}</option>`).join('')}</select></label>`;
  let h=`<div class="card"><h3 style="margin:0 0 8px">🏆 Top Students &amp; Certificates</h3><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
@@ -1708,23 +1711,23 @@ function topView(){tcFonts();tcMigrate();if(!tc.cid||!S.classes.some(c=>c.id===t
  h+=`<div class="card"><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center"><h3 style="margin:0">${esc(m.title.join(' '))} <span class="sub" style="margin:0;font-weight:600">· ${m.cat==='subject'?esc(m.subj)+' · ':''}${esc(m.bl)} · ${esc(c.name)}</span></h3>
   <span><button class="btn" onclick="tcSelAll(true)">Select all eligible</button> <button class="btn" onclick="tcSelAll(false)">Clear</button></span></div>
   ${m.note?`<div class="smsg warn" style="margin:8px 0 0">${esc(m.note)}</div>`:''}
-  ${showRows.length?`<div style="overflow-x:auto"><table class="rk tcr" aria-label="Ranking"><thead><tr><th></th><th>Rank</th><th>Learner</th><th>${esc(m.glabel)}</th><th>Certificate</th></tr></thead><tbody>${showRows.map(r=>`<tr class="${r.rank<=3?'tp3':''}"><td><input type="checkbox" ${r.elig?'':'disabled'} ${tc.sel.has(r.l.id)?'checked':''} onchange="tcSelToggle('${r.l.id}')" aria-label="Select ${esc(tcName(r.l))}"></td><td class="rn">${r.rank}${r.tied?'<span class="tie" title="Tied">=</span>':''}</td><td><button class="lnk" onclick="tcPv('${r.l.id}')">${esc(tcName(r.l))}</button> <button class="btn" style="padding:1px 7px;font-size:11px" onclick="tcPhotoPick('${r.l.id}')" aria-label="${PHOTO_OK.test(r.l.photo||'')?'Change':'Add'} picture of ${esc(tcName(r.l))}">${PHOTO_OK.test(r.l.photo||'')?'📷 Change':'📷 Add picture'}</button></td><td><b>${esc(r.disp)}</b></td><td>${r.elig?'<span class="ok">Eligible</span>':`<span class="sub" style="margin:0">${esc(tcWhy(m,r.l.id))}</span>`}</td></tr>`).join('')}</tbody></table></div>`:'<div class="sub" style="margin:8px 0 0">No student has a complete grade for this selection yet, so nothing can be ranked.</div>'}
+  ${showRows.length?posterBar(m,showRows):''}${showRows.length?`<div style="overflow-x:auto"><table class="rk tcr" aria-label="Ranking"><thead><tr><th title="Select for certificates">Cert.</th><th>Rank</th><th>Learner</th><th>${esc(m.glabel)}</th><th title="Include on the Top Student Poster">Poster</th><th>Certificate</th></tr></thead><tbody>${showRows.map(r=>`<tr class="${r.rank<=3?'tp3':''}"><td><input type="checkbox" ${r.elig?'':'disabled'} ${tc.sel.has(r.l.id)?'checked':''} onchange="tcSelToggle('${r.l.id}')" aria-label="Select ${esc(tcName(r.l))}"></td><td class="rn">${r.rank}${r.tied?'<span class="tie" title="Tied">=</span>':''}</td><td><button class="lnk" onclick="tcPv('${r.l.id}')">${esc(tcName(r.l))}</button> <button class="btn" style="padding:1px 7px;font-size:11px" onclick="tcPhotoPick('${r.l.id}')" aria-label="${PHOTO_OK.test(r.l.photo||'')?'Change':'Add'} picture of ${esc(tcName(r.l))}">${PHOTO_OK.test(r.l.photo||'')?'📷 Change':'📷 Add picture'}</button></td><td><b>${esc(r.disp)}</b></td><td><input type="checkbox" ${posterOk(r.l)?'checked':''} onchange="posterElig('${r.l.id}',this.checked)" aria-label="Include ${esc(tcName(r.l))} on the poster"></td><td>${r.elig?'<span class="ok">Eligible</span>':`<span class="sub" style="margin:0">${esc(tcWhy(m,r.l.id))}</span>`}</td></tr>`).join('')}</tbody></table></div>`:'<div class="sub" style="margin:8px 0 0">No student has a complete grade for this selection yet, so nothing can be ranked.</div>'}
   ${m.none.length?`<div class="sub" style="margin:8px 0 0"><b>Not ranked (${m.none.length}):</b> ${m.none.slice(0,14).map(x=>esc(tcName(x.l))+' ('+esc(x.why)+')').join('; ')}${m.none.length>14?'; …':''}. Incomplete records are never ranked as if complete.</div>`:''}
   <input type="file" id="tcPf" accept="image/jpeg,image/png,image/webp" hidden onchange="tcPhotoSave(this)"></div>`;
  /* poster */
- const pages=tcPosterPages(m),pgN=Math.min(tc.pg,Math.max(0,pages.length-1));tc.pg=pgN;
- h+=`<div class="card"><h3 style="margin:0 0 6px">Top Students poster</h3><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:8px">
+ const pm=tcPosterModel(m),TPo=tplSel(tc.layout==='grid'?'poster-grid':'poster'),pages=pm.shown.length?(TPo?tplPosterList(TPo,pm):tcPosterPages(pm)):[],pgN=Math.min(tc.pg,Math.max(0,pages.length-1));tc.pg=pgN;
+ h+=`<div class="card"><h3 style="margin:0 0 6px">Top Students poster</h3><div id="tcPMsg" class="smsg warn" role="alert" hidden></div>${pm.pcut?`<div class="sub" style="margin:0 0 6px">${pm.shown.length} of ${pm.pgroup} students in the selected group are on the poster. The others are unticked under “Poster” in the list above.</div>`:''}<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:8px">
   ${sel('tcLay','Layout',[['spot','One student per page (spotlight)'],['grid','Several students per page (overview)']],tc.layout,"tcSet('layout',this.value)")}
-  ${sel('tcPap','Paper (landscape)',[['a4','A4'],['letter','Letter']],tc.paper,"tcSet('paper',this.value)")}
+  ${sel('tcPap','Paper',[['a4','A4'],['letter','Letter']],tc.paper,"tcSet('paper',this.value)")}${tplPicker(tc.layout==='grid'?'poster-grid':'poster')}
   <button class="btn d" onclick="tcPrintPoster(false)" ${pages.length?'':'disabled'}>🖨 Print poster</button><button class="btn" onclick="tcPrintPoster(true)" ${pages.length?'':'disabled'}>Export poster as PDF</button></div>
-  ${pages.length?`<div style="max-width:900px">${tcFrame(PW,PH,pages[pgN],s.navy)}</div><div style="display:flex;gap:8px;align-items:center;margin-top:6px"><button class="btn" onclick="tcPage(-1)" ${pgN?'':'disabled'}>◀</button><span class="sub" style="margin:0">Page ${pgN+1} of ${pages.length}${tc.layout==='grid'&&m.shown.length>10?' (10 students per page)':''}</span><button class="btn" onclick="tcPage(1)" ${pgN<pages.length-1?'':'disabled'}>▶</button></div>`:'<div class="sub">The poster appears here once students are ranked.</div>'}</div>`;
+  ${pages.length?`<div style="max-width:900px">${TPo?tplPosterFrame(TPo,pm,pages[pgN]):tcFrame(PW,PH,pages[pgN],s.navy)}</div><div style="display:flex;gap:8px;align-items:center;margin-top:6px"><button class="btn" onclick="tcPage(-1)" ${pgN?'':'disabled'}>◀</button><span class="sub" style="margin:0">Page ${pgN+1} of ${pages.length}${tc.layout==='grid'&&pm.shown.length>(TPo?TPo.perPage:10)?' ('+(TPo?TPo.perPage:10)+' students per page)':''}</span><button class="btn" onclick="tcPage(1)" ${pgN<pages.length-1?'':'disabled'}>▶</button></div>`:`<div class="smsg warn">${esc(tcPosterEmpty(m)||'The poster appears here once students are ranked.')}</div>`}</div>`;
  /* certificate */
  const elig=m.rows.filter(r=>r.elig),pvId=tc.pv||(elig[0]&&elig[0].l.id),pvRow=m.rows.find(r=>r.l.id===pvId),P=S.p||{},sb=m.cat==='subject'?c.ns[m.si]:null,tt=(sb&&sb.teacher)||{},ids=[...tc.sel].filter(id=>elig.some(r=>r.l.id===id));
  h+=`<div class="card"><h3 style="margin:0 0 6px">Certificate of Recognition</h3><div id="tcMsg" class="smsg bad" role="alert" hidden></div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:6px 0">${sel('tcWho','Preview for',m.rows.map(r=>[r.l.id,'#'+r.rank+' '+tcName(r.l)+(r.elig?'':' (not eligible)')]),pvId||'',"tcPv(this.value)")}
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:6px 0">${sel('tcWho','Preview for',m.rows.map(r=>[r.l.id,'#'+r.rank+' '+tcName(r.l)+(r.elig?'':' (not eligible)')]),pvId||'',"tcPv(this.value)")}${tplPicker('certificate')}
    <button class="btn d" onclick="tcCerts(['${pvId||''}'],false)" ${pvRow&&pvRow.elig?'':'disabled'}>🖨 Print this certificate</button><button class="btn" onclick="tcCerts(['${pvId||''}'],true)" ${pvRow&&pvRow.elig?'':'disabled'}>Export as PDF</button>
    <button class="btn y" onclick="tcCerts(${esc(JSON.stringify(ids))},false)" ${ids.length?'':'disabled'}>Print ${ids.length} selected (one per page)</button><button class="btn" onclick="tcCerts(${esc(JSON.stringify(ids))},true)" ${ids.length?'':'disabled'}>Export selected as PDF</button></div>
-  ${pvRow&&pvRow.elig?`<div style="max-width:900px">${tcFrame(CW,CH,tcCertHTML({...tcRec(m,pvRow),logo:s.logo}),'#fff')}</div>`:`<div class="smsg warn">${pvRow?esc(tcWhy(m,pvId)):elig.length?'Choose a student to preview.':'No student is eligible for a certificate with this selection yet.'}</div>`}
+  ${pvRow&&pvRow.elig?`<div style="max-width:900px">${tplCertPreview(m,pvRow,s)}</div>`:`<div class="smsg warn">${pvRow?esc(tcWhy(m,pvId)):elig.length?'Choose a student to preview.':'No student is eligible for a certificate with this selection yet.'}</div>`}
   <div class="sub" style="margin:8px 0 4px"><b>Signatories</b> (edits apply to every certificate; leave a name blank to sign by hand)</div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
    ${sb?`<label style="width:auto;margin:0">Subject teacher<input value="${esc(tt.name||'')}" placeholder="${esc(P.name||'Name')}" onchange="tcTeacher(${m.si},'name',this.value)" style="min-width:210px"></label><label style="width:auto;margin:0">Designation<input value="${esc(tt.role||'')}" placeholder="${esc(s.trole)}" onchange="tcTeacher(${m.si},'role',this.value)" style="width:150px"></label>`:`<label style="width:auto;margin:0">Class adviser<input value="${esc(P.name||'')}" disabled style="min-width:210px"></label><label style="width:auto;margin:0">Designation<input value="${esc(S.sch&&S.sch.arole||'')}" placeholder="${esc(TC_DEF.arole)}" onchange="tcS('arole',this.value)" style="width:150px"></label>`}
@@ -1746,6 +1749,7 @@ function topView(){tcFonts();tcMigrate();if(!tc.cid||!S.classes.some(c=>c.id===t
   <label style="width:auto;margin:0">When students are tied<select onchange="tcS('tie',this.value)"><option value="all" ${s.tie==='all'?'selected':''}>Everyone who shares a qualifying rank gets a certificate</option><option value="unique" ${s.tie==='unique'?'selected':''}>Only students with a unique rank get a certificate</option></select></label>
   <div><b>Subject teachers for ${esc(c.name)}</b>${c.ns.map((x,i)=>{const t=x.teacher||{};return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><span style="min-width:150px">${esc(x.n)}</span><input value="${esc(t.name||'')}" placeholder="${esc(P.name||'Teacher name')}" onchange="tcTeacher(${i},'name',this.value)" style="min-width:200px"><input value="${esc(t.role||'')}" placeholder="${esc(s.trole)}" onchange="tcTeacher(${i},'role',this.value)" style="width:140px">${t.sig?`<img src="${t.sig}" alt="" style="height:30px;border:1px solid var(--line);background:#fff">`:''}<label class="btn" style="width:auto;margin:0;cursor:pointer;display:inline-block">Signature image<input type="file" accept="image/*" hidden onchange="tcUp('tsig:${i}',this)"></label>${t.sig?`<button class="btn" onclick="tcClr('tsig:${i}')">Remove</button>`:''}</div>`}).join('')}
    <div class="sub" style="margin:0">Signature lines stay blank for a physical signature unless you add an authorized signature image here.</div></div></div></details>`;
+ h+=tplCard();
  /* issued record */
  const led=(S.certs||[]).slice().reverse();
  h+=`<div class="card"><h3 style="margin:0 0 6px">Issued certificates <span class="tag">${led.length}</span></h3>${led.length?`<div style="overflow-x:auto"><table class="rk" aria-label="Issued certificates"><thead><tr><th>Issued</th><th>Student</th><th>Recognition</th><th></th></tr></thead><tbody>${led.slice(0,60).map(e=>{let now='';const c2=S.classes.find(x=>x.id===e.cid);if(c2&&c2.mode==='num'&&c2.ns&&c2.ns.length){try{const R=tcRankAll(c2,e.cat,Math.min(e.sidx||0,c2.ns.length-1),e.bk),r=R.rows.find(x=>x.l.id===e.lid);now=!r?'<div class="sub" style="margin:0;color:#7a5600">Now: not ranked</div>':(r.rank!==e.rank||r.disp!==e.grade)?`<div class="sub" style="margin:0;color:#7a5600">Current record: Rank ${r.rank}, ${esc(r.disp)} (this certificate keeps what was issued)</div>`:''}catch(x){}}
@@ -1755,7 +1759,7 @@ function topView(){tcFonts();tcMigrate();if(!tc.cid||!S.classes.some(c=>c.id===t
 /* ===== Version and update check =====
    When a newer index.html is uploaded to the website, devices that still hold the old copy are told to reload. Saved records
    live in the browser for the site address and are not touched by an update. */
-const APP_VERSION='2026.11.22-1';
+const APP_VERSION='2026.11.23-1';
 async function updFetchVersion(){try{const url=location.href.split('#')[0].split('?')[0],r=await fetch(url,{cache:'no-store',headers:{Range:'bytes=0-3999'}});if(!r.ok)return null;
  let txt='';if(r.body&&r.body.getReader){const rd=r.body.getReader(),x=await rd.read();txt=new TextDecoder().decode(x.value||new Uint8Array());try{rd.cancel()}catch(e){}}else txt=(await r.text()).slice(0,4000);
  const m=/<meta name="app-version" content="([^"]+)"/.exec(txt);return m?m[1]:null}catch(e){return null}}
@@ -1807,7 +1811,7 @@ function vioFormHTML(l){const f=vioForm;return `<div class="vio"><label>Date<inp
 function vpRow(l,v){const P=v.photos||[];if(!P.length)return'';return `<div class="vp-grid" aria-label="${P.length} photo${P.length===1?'':'s'}">${P.map((p,i)=>`<button class="vp-item" onclick="vpOpen('${l.id}','${v.id}',${i})" aria-label="Open photo ${i+1} of ${P.length}"><img class="vp-th" data-vp="${p.id}" src="${VP_BLANK}" alt="Photo ${i+1} of ${P.length}"></button>`).join('')}</div>`}
 function vioCard(l,v){const n=(v.photos||[]).length;return `<div class="vio" data-vid="${v.id}"><div><b>Date:</b> ${esc(fmtDate(v.date))}</div><div><b>Violation Type:</b> ${esc(v.type)}</div><div><b>Description:</b> ${esc(v.desc)||'—'}</div><div><b>Action Taken:</b> ${esc(v.action)||'—'}</div><div><b>Status:</b> ${esc(v.status||'Under Review')}</div>${vpRow(l,v)}<div style="margin:6px 0"><button class="btn" onclick="vioEdit('${l.id}','${v.id}')">Edit</button> <button class="btn" onclick="vpAddPick('${l.id}','${v.id}')" ${n>=VP_MAX?'disabled':''}>📷 Add photos</button> <button class="btn r" onclick="vioDel('${l.id}','${v.id}')">Delete</button></div>${refHTML(l,v)}</div>`}
 function vioHTML(l){const L=(l.vio||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
- return `<h4 style="margin:16px 0 6px">Violation Records <span class="tag">${L.length}</span></h4><div id="vpNote" class="smsg bad" role="alert" hidden></div><input id="vpAdd" type="file" accept="image/*" multiple hidden onchange="vpAddFiles(this)" aria-label="Add photos to this violation">`+(vioForm&&vioForm.lid===l.id?vioFormHTML(l):`<button class="btn y" onclick="vioNew('${l.id}')">+ Add violation</button>`)+(L.length?L.map(v=>vioCard(l,v)).join(''):'<div class="sub">No violations recorded.</div>')}
+ return `<label style="display:flex;gap:8px;align-items:center;margin:14px 0 0;font-size:13px;color:#16213a"><input type="checkbox" style="width:auto" ${l.noPoster?'':'checked'} onchange="posterElig('${l.id}',this.checked)"> Eligible for the Top Student Poster <span class="sub" style="margin:0">(untick to leave this student off posters)</span></label><h4 style="margin:16px 0 6px">Violation Records <span class="tag">${L.length}</span></h4><div id="vpNote" class="smsg bad" role="alert" hidden></div><input id="vpAdd" type="file" accept="image/*" multiple hidden onchange="vpAddFiles(this)" aria-label="Add photos to this violation">`+(vioForm&&vioForm.lid===l.id?vioFormHTML(l):`<button class="btn y" onclick="vioNew('${l.id}')">+ Add violation</button>`)+(L.length?L.map(v=>vioCard(l,v)).join(''):'<div class="sub">No violations recorded.</div>')}
 function vioNew(lid){vioForm={lid,id:null,date:todayISO(),type:VIO_TYPES[0],other:'',desc:'',act:'',st:'Under Review',keep:[],staged:[],drop:[]};const l=findL(lid);if(l)paintProf(l)}
 function vioEdit(lid,id){const l=findL(lid),v=l&&(l.vio||[]).find(x=>x.id===id);if(!v)return;const std=VIO_TYPES.includes(v.type);vioForm={lid,id,date:v.date,type:std?v.type:'Other',other:std?'':v.type,desc:v.desc||'',act:v.action||'',st:v.status||'Under Review',keep:(v.photos||[]).map(p=>({...p})),staged:[],drop:[]};paintProf(l)}
 function vpRelease(f){(f&&f.staged||[]).forEach(s=>{try{URL.revokeObjectURL(s.url)}catch(e){}})}
@@ -1905,138 +1909,329 @@ function pwEyes(){document.querySelectorAll('input[type=password]:not([data-eye]
  b.onclick=()=>{const show=i.type==='password',keep=document.activeElement===i,a=i.selectionStart,z=i.selectionEnd;i.type=show?'text':'password';const back=()=>{if(keep&&document.activeElement===i){try{i.setSelectionRange(a,z)}catch(x){}}};back();setTimeout(back,0);requestAnimationFrame(back);b.setAttribute('aria-pressed',String(show));b.setAttribute('aria-label',show?'Hide password':'Show password');b.title=show?'Hide password':'Show password';b.innerHTML=show?PW_EYE_OFF:PW_EYE};
  w.appendChild(b)})}
 try{new MutationObserver(()=>pwEyes()).observe(document.body,{childList:true,subtree:true});pwEyes()}catch(e){}
+
+/* ===== Your own poster and certificate designs (uploaded as HTML) =====
+   An uploaded design is a single HTML file with {{placeholders}}. It is cleaned when it is read (scripts, outside links and
+   other risky parts are removed) and it is only ever shown inside a frame that cannot run scripts. The built-in designs are
+   untouched; an uploaded design is simply another choice. */
+const TPL_MAX=4*1024*1024,TPL_COUNT=20;
+const TPL_KINDS={certificate:'Certificate of Recognition',poster:'Poster: one student per page','poster-grid':'Poster: several students per page'};
+const TPL_SIZE={certificate:[1123,794],poster:[1600,1131],'poster-grid':[1600,1131]};
+const TPL_KEY={certificate:'tplC',poster:'tplP','poster-grid':'tplG'};
+const TPL_STUDENT=['name','name_upper','first','last','rank','rank_label','grade','grade_label','subject','subject_upper','photo','tied','index'];
+const TPL_PAGE=['title_1','title_2','category_line','period','period_phrase','year','section','grade_level','count','page','pages','school','school_upper','short','tag','campus','address','logo','seal','date_text','day','month','year4','teacher','teacher_role','teacher_sig','principal','principal_role','principal_sig','wording','wording_html'];
+const TPL_IMG=new Set(['photo','logo','seal','teacher_sig','principal_sig']);
+const TPL_OK=new Set(('div span p h1 h2 h3 h4 h5 h6 b i u s strong em small sub sup br hr ul ol li table thead tbody tfoot tr td th caption colgroup col section header footer main article aside figure figcaption blockquote pre code img svg g path rect circle ellipse line polyline polygon defs lineargradient radialgradient stop clippath mask pattern text tspan symbol use image').split(' '));
+const TPL_DROP=new Set('script iframe frame frameset object embed applet link base meta noscript template video audio source track canvas foreignobject animate animatetransform animatemotion set form input button textarea select option dialog slot portal title desc'.split(' '));
+const TPL_BAD_ATTR=/^(srcdoc|action|formaction|ping|target|download|autofocus|contenteditable|draggable|http-equiv|is|slot|accesskey|tabindex|rel|manifest)$/;
+const TPL_URL_ATTR=/^(src|href|xlink:href|poster|background|data|srcset|usemap|longdesc|cite)$/;
+const tplTokOnly=v=>/^\{\{\s*[a-z0-9_]+\s*\}\}$/i.test(String(v).trim());
+function tplUrlOk(v){v=String(v).trim();return v===''||tplTokOnly(v)||/^#[\w-]+$/.test(v)||/^data:image\/(png|jpe?g|gif|webp|svg\+xml)[;,]/i.test(v)}
+/* every url(...) must be a picture/font that is inside the file; anything else is dropped */
+function tplCssUrls(text,R){return String(text).replace(/url\(\s*(['"]?)([\s\S]*?)\1\s*\)/gi,(m,q,u)=>{u=u.trim();if(/^data:(image\/(png|jpe?g|gif|webp|svg\+xml)|font\/[\w.+-]+|application\/(x-)?font[\w.+-]*|application\/vnd\.ms-fontobject|application\/octet-stream)[;,]/i.test(u)||/^#[\w-]+$/.test(u)||tplTokOnly(u))return m;if(u)R.external.push(u.slice(0,90));return'none'})}
+function tplCss(css,R){css=String(css||'').replace(/\/\*[\s\S]*?\*\//g,'');
+ css=css.replace(/@import[^;{]*;?/gi,m=>{R.external.push(m.trim().slice(0,90));return''}).replace(/@(charset|namespace)[^;]*;/gi,'').replace(/@page\s*[^{]*\{(?:[^{}]|\{[^{}]*\})*\}/gi,'');
+ css=css.replace(/expression\s*\(|behaviou?r\s*:|-moz-binding\s*:|javascript\s*:|vbscript\s*:/gi,m=>{R.unsafe.push(m.trim());return'x-removed:('});
+ return tplCssUrls(css,R)}
+const tplCount=(o,k)=>{o[k]=(o[k]||0)+1};
+function tplCleanAttrs(el,R){for(const a of[...el.attributes]){const n=a.name.toLowerCase(),v=a.value;
+ if(/^on/.test(n)||TPL_BAD_ATTR.test(n)||(n.startsWith('xmlns:')&&n!=='xmlns:xlink')){el.removeAttribute(a.name);tplCount(R.attrs,n);continue}
+ if(TPL_URL_ATTR.test(n)){if(!tplUrlOk(v)){el.removeAttribute(a.name);if(v.trim())R.external.push(v.trim().slice(0,90))}continue}
+ if(n==='style'){el.setAttribute('style',tplCss(v,R));continue}
+ if(/javascript\s*:|vbscript\s*:|data:text|data:application/i.test(v)){el.removeAttribute(a.name);R.unsafe.push(n);continue}
+ if(/url\(/i.test(v))el.setAttribute(a.name,tplCssUrls(v,R))}}
+function tplSanitize(text){const R={tags:{},attrs:{},external:[],unsafe:[]},T={ok:false,errors:[],warnings:[],report:R,tokens:[],unknown:[]};
+ text=String(text==null?'':text);T.size=text.length;
+ if(!text.trim()){T.errors.push('The file is empty.');return T}
+ if(text.length>TPL_MAX){T.errors.push('The file is larger than 4 MB. Use smaller or fewer pictures.');return T}
+ let doc;try{doc=new DOMParser().parseFromString(text,'text/html')}catch(e){T.errors.push('The file could not be read as HTML.');return T}
+ const meta=n=>{const m=doc.querySelector('meta[name="'+n+'"]');return m?(m.getAttribute('content')||'').trim():''};
+ T.name=(meta('ecr-name')||doc.title||'').trim().slice(0,60);
+ const css=[];doc.querySelectorAll('style').forEach(s=>{css.push(tplCss(s.textContent,R));s.remove()});
+ doc.head.querySelectorAll('script,link,base,object,embed,iframe,noscript').forEach(e=>tplCount(R.tags,e.localName));
+ const root=doc.body;if(!root||(!root.children.length&&!root.textContent.trim())){T.errors.push('The design has nothing inside <body>.');return T}
+ [...root.querySelectorAll('*')].forEach(el=>{if(!root.contains(el))return;const tag=el.localName.toLowerCase();
+  if(TPL_DROP.has(tag)){tplCount(R.tags,tag);el.remove();return}
+  if(!TPL_OK.has(tag)){const p=el.parentNode;while(el.firstChild)p.insertBefore(el.firstChild,el);el.remove();return}
+  tplCleanAttrs(el,R);if((tag==='img'||tag==='image')&&!el.getAttribute('src')&&!el.getAttribute('href')&&!el.getAttribute('xlink:href'))el.remove()});
+ const ba={};tplCleanAttrs(root,R);['class','style','id'].forEach(k=>{if(root.getAttribute(k))ba[k]=root.getAttribute(k)});T.bodyAttrs=ba;
+ T.head=css.join('\n').trim()?'<style>'+css.join('\n')+'</style>':'';T.body=root.innerHTML;
+ const all=T.head+T.body,seen=new Set();(all.match(/\{\{\s*[a-z0-9_]+\s*\}\}/gi)||[]).forEach(t=>seen.add(t.replace(/[{}\s]/g,'').toLowerCase()));
+ T.tokens=[...seen];const known=new Set([...TPL_STUDENT,...TPL_PAGE]);T.unknown=T.tokens.filter(t=>!known.has(t));
+ T.hasRepeat=!!root.querySelector('[data-repeat]');const rp=root.querySelector('[data-repeat]');T.perPage=Math.max(1,Math.min(40,parseInt(rp&&rp.getAttribute('data-per-page'),10)||8));
+ let kind=meta('ecr-template').toLowerCase();if(!TPL_KINDS[kind])kind='';T.kindDeclared=!!kind;
+ if(!kind){kind=T.hasRepeat?'poster-grid':/\{\{\s*(wording|wording_html|teacher|principal)/i.test(all)?'certificate':/\{\{\s*(title_1|title_2|photo|rank_label)/i.test(all)?'poster':''}
+ T.kind=kind;const sz=meta('ecr-size').match(/^(\d{3,4})\s*[x×]\s*(\d{3,4})$/i);
+ if(sz&&+sz[1]>=300&&+sz[1]<=6000&&+sz[2]>=300&&+sz[2]<=6000){T.w=+sz[1];T.h=+sz[2];T.sizeAssumed=false}else{const d=TPL_SIZE[kind]||TPL_SIZE.certificate;T.w=d[0];T.h=d[1];T.sizeAssumed=true}
+ T.hash=tcHash(text);T.ok=true;return T}
+/* what has to be fixed before saving (errors) and what is worth knowing (warnings), for the chosen kind */
+function tplCheck(T,kind){const E=[],W=[],R=T.report||{tags:{},attrs:{},external:[],unsafe:[]};
+ if(!T.ok)return{errors:T.errors.slice(),warnings:[]};
+ if(!TPL_KINDS[kind])E.push('Choose what this design is for.');
+ if(!T.tokens.some(t=>t==='name'||t==='name_upper'||t==='first'||t==='last'))E.push('The design must contain a placeholder for the student\u2019s name, such as {{name}} or {{name_upper}}.');
+ if(kind==='poster-grid'&&!T.hasRepeat)E.push('A "several students per page" poster needs one block marked data-repeat="students" that is repeated for each student.');
+ if(kind!=='poster-grid'&&T.hasRepeat)W.push('This design has a repeating block (data-repeat), which is only used by "several students per page" posters.');
+ if((kind==='poster'||kind==='poster-grid')&&!T.tokens.includes('photo'))W.push('There is no {{photo}} placeholder, so student pictures will not appear.');
+ if(kind==='certificate'&&!T.tokens.some(t=>t==='wording'||t==='wording_html'))W.push('There is no {{wording_html}} placeholder, so the certificate wording from the settings will not appear.');
+ const tg=Object.keys(R.tags);if(tg.length)W.push('Removed for safety: '+tg.map(t=>'<'+t+'> ×'+R.tags[t]).join(', ')+'.');
+ const at=Object.keys(R.attrs);if(at.length)W.push('Removed for safety: '+at.slice(0,8).join(', ')+' attributes.');
+ if(R.external.length)W.push('Pictures, fonts or links that are not inside the file were removed ('+R.external.length+'). Embed them in the file instead.');
+ if(R.unsafe.length)W.push('Unsafe style or link code was removed ('+R.unsafe.length+').');
+ if(T.unknown.length)W.push('Unknown placeholders (check the spelling): '+T.unknown.map(t=>'{{'+t+'}}').join(', ')+'. They will print as blanks.');
+ if(T.sizeAssumed)W.push('The page size was not stated, so '+T.w+' × '+T.h+' px was assumed. Add <meta name="ecr-size" content="'+T.w+'x'+T.h+'"> to set it.');
+ return{errors:E,warnings:W}}
+
+/* ---------- filling a design with data ---------- */
+const tplCache=new Map(),tplBlobs=new Map();
+const TPL_AVATAR='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#31466f"/><circle cx="50" cy="38" r="17" fill="#c9a24a"/><path d="M18,92C18,60 82,60 82,92Z" fill="#c9a24a"/></svg>');
+function tplToBlob(d){const i=d.indexOf(','),head=d.slice(5,i),b64=/;base64$/i.test(head),mime=head.split(';')[0]||'application/octet-stream',data=d.slice(i+1);
+ let bytes;if(b64){const bin=atob(data);bytes=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)bytes[k]=bin.charCodeAt(k)}else bytes=new TextEncoder().encode(decodeURIComponent(data));
+ return URL.createObjectURL(new Blob([bytes],{type:mime}))}
+/* big pictures and fonts become one shared blob address instead of being copied into every page */
+function tplBlobify(str,T){return str.replace(/data:[a-z0-9.+\/-]+(?:;[^,'")\s]*)?,[^'")\s]+/gi,m=>{if(m.length<20000)return m;const k=tcHash(m);let u=tplBlobs.get(k);if(!u){try{u=tplToBlob(m)}catch(e){return m}tplBlobs.set(k,u);if(T)(T.blobs=T.blobs||[]).push(k)}return u})}
+function tplRelease(T){(T&&T.blobs||[]).forEach(k=>{const u=tplBlobs.get(k);if(u){try{URL.revokeObjectURL(u)}catch(e){}tplBlobs.delete(k)}});if(T)T.blobs=[]}
+function tplPrep(T){if(T.bodyB===undefined){T.headB=tplBlobify(T.head,T);T.bodyB=tplBlobify(T.body,T)}return T}
+const tplVal=(v,k)=>{k=k.toLowerCase();const x=v[k];return(x===undefined||x===null||x==='')?(TPL_IMG.has(k)?VP_BLANK:''):String(x)};
+const tplFill=(s,v)=>s.replace(/\{\{\s*([a-z0-9_]+)\s*\}\}/gi,(m,k)=>tplVal(v,k));
+function tplBindEl(root,v){const d=root.ownerDocument;
+ root.querySelectorAll('[data-show-if],[data-hide-if]').forEach(e=>{if(!root.contains(e))return;const has=k=>!!String(v[(k||'').trim().toLowerCase()]||''),sh=e.getAttribute('data-show-if'),hd=e.getAttribute('data-hide-if');
+  if((sh&&!has(sh))||(hd&&has(hd)))e.remove();else{e.removeAttribute('data-show-if');e.removeAttribute('data-hide-if')}});
+ const tw=d.createTreeWalker(root,NodeFilter.SHOW_TEXT),nodes=[];for(let n=tw.nextNode();n;n=tw.nextNode())if(n.nodeValue.includes('{{'))nodes.push(n);
+ nodes.forEach(n=>{const parts=n.nodeValue.split(/(\{\{\s*wording_html\s*\}\})/i),f=d.createDocumentFragment();
+  parts.forEach(p=>{if(/^\{\{\s*wording_html\s*\}\}$/i.test(p)){const t=d.createElement('template');t.innerHTML=v.wording_html||'';f.appendChild(t.content)}else if(p)f.appendChild(d.createTextNode(tplFill(p,v)))});n.replaceWith(f)});
+ [root,...root.querySelectorAll('*')].forEach(e=>{for(const a of[...e.attributes])if(a.value.includes('{{'))e.setAttribute(a.name,tplFill(a.value,v))})}
+/* one page of a design, as a complete document for the locked frame */
+function tplDoc(T,vals,items){tplPrep(T);
+ const doc=new DOMParser().parseFromString('<!doctype html><html><head></head><body>'+T.bodyB+'</body></html>','text/html'),body=doc.body;
+ body.querySelectorAll('[data-repeat]').forEach(rp=>{(items||[{}]).forEach((it,ix)=>{const c=rp.cloneNode(true);c.removeAttribute('data-repeat');c.removeAttribute('data-per-page');tplBindEl(c,{...vals,...it,index:String(ix+1)});rp.parentNode.insertBefore(c,rp)});rp.remove()});
+ tplBindEl(body,vals);const ba=T.bodyAttrs||{};for(const k in ba)body.setAttribute(k,ba[k]);
+ const fix='html,body{margin:0!important;padding:0!important}body{width:'+T.w+'px!important;height:'+T.h+'px!important;overflow:hidden!important;position:relative!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}*{animation:none!important;transition:none!important}';
+ return '<!doctype html><html><head><meta charset="utf-8">'+T.headB+'<style>'+fix+'</style></head>'+body.outerHTML+'</html>'}
+const TPL_CSP="default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data: blob:";
+function tplFrame(doc,w,h){return `<iframe class="tpl-fr" title="Design" sandbox="allow-same-origin" csp="${TPL_CSP}" referrerpolicy="no-referrer" srcdoc="${esc(doc)}" style="width:${w}px;height:${h}px;border:0;display:block;background:#fff" onload="tplLoaded(this)"></iframe>`}
+/* text that carries data-fit is squeezed to fit its box, whatever font the device has */
+function tplFitDoc(d){d.querySelectorAll('[data-fit]').forEach(el=>{let sp=el.querySelector(':scope>span[data-fi]');
+ if(!sp){sp=d.createElement('span');sp.setAttribute('data-fi','1');sp.style.display='inline-block';sp.style.whiteSpace='nowrap';while(el.firstChild)sp.appendChild(el.firstChild);el.appendChild(sp)}
+ const cs=d.defaultView.getComputedStyle(el),avail=el.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0);sp.style.transform='';sp.style.fontSize='';
+ const w=sp.offsetWidth;if(!avail||!w||w<=avail)return;const fs=parseFloat(d.defaultView.getComputedStyle(sp).fontSize)||16,r=avail/w,min=.6,org=el.getAttribute('data-fit')==='center'||cs.textAlign==='center'?'center':cs.textAlign==='right'?'right center':'left center';
+ sp.style.transformOrigin=org;if(r<min)sp.style.fontSize=(fs*(r/min)).toFixed(1)+'px';const w2=sp.offsetWidth,r2=w2>avail?avail/w2:1;sp.style.transform='scaleX('+Math.min(1,r<min?r2:Math.max(r,min)).toFixed(3)+')'})}
+function tplFontsFit(f){try{const d=f.contentDocument;if(!d)return Promise.resolve();return(d.fonts&&d.fonts.ready?Promise.race([d.fonts.ready,new Promise(r=>setTimeout(r,1500))]):Promise.resolve()).then(()=>{tplFitDoc(d);f.dataset.ready='1'})}catch(e){return Promise.resolve()}}
+function tplLoaded(f){tplFontsFit(f)}
+/* ---------- the values a design can use ---------- */
+const tplStripRaw=m=>((m.cat==='subject'?'SUBJECT RANKING \u00b7 '+m.subj:'OVERALL ACADEMIC RANKING')+' \u00b7 '+m.bl+(m.year?' \u00b7 S.Y. '+m.year:'')+' \u00b7 '+m.c.name).toUpperCase();
+function tplSchool(s){return{school:s.name,school_upper:String(s.name).toUpperCase(),short:s.short,tag:s.tag,campus:s.campus,address:s.address||'',logo:s.logo||TC_LOGO}}
+function tplDates(dt,s){const[Y,M,D]=dt.split('-');return{date_text:(MONTHS[+M-1]||'')+' '+(+D)+', '+Y,day:s.dayBlank?'____':String(+D),month:MONTHS[+M-1]||'',year4:Y}}
+function tplPageVals(m){const s=SCH(),P=S.p||{},sb=m.cat==='subject'?m.c.ns[m.si]:null,t=(sb&&sb.teacher)||{};
+ return{title_1:m.title[0],title_2:m.title[1],category_line:tplStripRaw(m),period:m.bl,period_phrase:tcPhrase(m.b),year:m.year||'',section:m.c.name,grade_level:m.c.grade||'',count:String(m.shown.length),...tplSchool(s),seal:s.seal||'',...tplDates(s.date||todayISO(),s),
+  teacher:sb?(t.name||P.name||''):(P.name||''),teacher_role:sb?(t.role||s.trole):s.arole,teacher_sig:sb?(t.sig||''):'',principal:s.principal||P.head||'',principal_role:s.prole,principal_sig:s.psig||''}}
+function tplStudentVals(m,r,ix){const p=PHOTO_OK.test(r.l.photo||'')?r.l.photo:TPL_AVATAR;
+ return{name:tcNice(r.l),name_upper:tcName(r.l),first:r.l.first||'',last:r.l.last||'',rank:String(r.rank),rank_label:'TOP '+r.rank+' STUDENT'+(r.tied?' (TIED)':''),grade:r.disp,grade_label:m.glabel,subject:m.subj,subject_upper:String(m.subj).toUpperCase(),photo:p,tied:r.tied?'TIED':'',index:String(ix||1)}}
+function tplCertVals(rec){const s=SCH(),L=findAny(rec.lid),cl=S.classes.find(c=>c.id===rec.cid),wording=String(rec.text||'').replace(/\*\*/g,'');
+ return{name:rec.name,name_upper:L?tcName(L):String(rec.name||'').toUpperCase(),first:L?L.first||'':'',last:L?L.last||'':'',rank:String(rec.rank),rank_label:'TOP '+rec.rank+' STUDENT',grade:rec.grade,grade_label:rec.cat==='subject'?tcGradeLabel(rec.bk,cl):'ACADEMIC AVERAGE',subject:rec.subj||'',subject_upper:String(rec.subj||'').toUpperCase(),photo:(L&&PHOTO_OK.test(L.photo||''))?L.photo:TPL_AVATAR,tied:'',index:'1',
+  title_1:'',title_2:'',category_line:'',period:rec.basis||'',period_phrase:tcPhrase(rec.bk),year:rec.year||'',section:rec.cls||'',grade_level:cl?cl.grade||'':'',count:'1',page:'1',pages:'1',
+  ...tplSchool(s),school:rec.school||'',school_upper:String(rec.school||'').toUpperCase(),campus:rec.campus||'',address:rec.address||'',seal:tcImgOf(rec.seal),...tplDates(rec.date||todayISO(),s),
+  teacher:rec.teacher||'',teacher_role:rec.trole||'',teacher_sig:tcImgOf(rec.tsig),principal:rec.principal||'',principal_role:rec.prole||'',principal_sig:tcImgOf(rec.psig),wording,wording_html:tcRich(rec.text||'')}}
+/* ---------- which design is in use ---------- */
+function tplSel(kind){const id=SCH()[TPL_KEY[kind]],T=id&&tplCache.get(id);return T&&T.kind===kind?T:null}
+function tplStamp(){const T=tplSel('certificate');return T?{tplId:T.id,tplName:T.name,tplHash:T.hash}:{}}
+function tplPick(kind,id){schSet(TPL_KEY[kind],id);tc.pg=0;render()}
+function tplPicker(kind){const L=(S.tpls||[]).filter(t=>t.kind===kind),cur=SCH()[TPL_KEY[kind]]||'';
+ return `<label style="width:auto;margin:0">Design<select aria-label="Design" onchange="tplPick('${kind}',this.value)"><option value="">Built-in design</option>${L.map(t=>`<option value="${t.id}" ${t.id===cur?'selected':''}>${esc(t.name)}${tplCache.has(t.id)?'':' (not on this device)'}</option>`).join('')}</select></label>`}
+function tplPosterList(T,m){if(T.kind==='poster')return m.shown.map((r,i)=>({rows:[r],i}));const pp=T.perPage,n=Math.ceil(m.shown.length/pp);return Array.from({length:n},(_,i)=>({rows:m.shown.slice(i*pp,i*pp+pp),i,pages:n}))}
+function tplSpecDoc(T,m,sp){const pv=tplPageVals(m);
+ if(T.kind==='poster')return tplDoc(T,{...pv,...tplStudentVals(m,sp.rows[0],1),page:String(sp.i+1),pages:String(m.shown.length)});
+ return tplDoc(T,{...pv,page:String(sp.i+1),pages:String(sp.pages)},sp.rows.map((r,i)=>tplStudentVals(m,r,i+1)))}
+const tplPosterFrame=(T,m,sp)=>tcFrame(T.w,T.h,tplFrame(tplSpecDoc(T,m,sp),T.w,T.h),'#fff');
+function tplCertPreview(m,row,s){const rec={...tcRec(m,row),logo:s.logo},T=tplSel('certificate');if(!T)return tcFrame(CW,CH,tcCertHTML(rec),'#fff');return tcFrame(T.w,T.h,tplFrame(tplDoc(T,tplCertVals(rec)),T.w,T.h),'#fff')}
+/* ---------- printing ---------- */
+async function tplPrintJob(specs,title){if(!specs.length)return;tcFonts();const box=$('#tcPrint'),f0=specs[0],land=f0.w>=f0.h,[a,b]=TC_PAPER[tc.paper]||TC_PAPER.a4,[pw,ph]=land?[a,b]:[b,a],pxw=pw*96/25.4,pxh=ph*96/25.4;
+ let st=$('#tcPageStyle');if(!st){st=document.createElement('style');st.id='tcPageStyle';document.head.appendChild(st)}st.textContent='@page{size:'+pw+'mm '+ph+'mm;margin:0}';
+ tcPrintPages.old=document.title;if(title)document.title=title;document.body.classList.add('pq-tc');
+ const secs=specs.map(sp=>{const k=Math.min(pxw/sp.w,pxh/sp.h),ox=((pxw-sp.w*k)/2).toFixed(1),oy=((pxh-sp.h*k)/2).toFixed(1);
+  if(sp.kind==='frame')return `<section class="tc-pg" style="width:${pw}mm;height:${ph}mm;background:#fff"><div style="position:absolute;left:${ox}px;top:${oy}px;width:${sp.w}px;height:${sp.h}px;transform:scale(${k.toFixed(5)});transform-origin:0 0">${tplFrame(sp.make(),sp.w,sp.h)}</div></section>`;
+  const inner=tcMeasured([sp.make()],sp.w,sp.h)[0];return `<section class="tc-pg" style="width:${pw}mm;height:${ph}mm;background:${sp.bg||'#fff'}"><div style="position:absolute;left:${ox}px;top:${oy}px"><div class="tc-pi" style="width:${sp.w}px;height:${sp.h}px;zoom:${k.toFixed(5)}">${inner}</div></div></section>`});
+ box.innerHTML=secs.join('');const frs=[...box.querySelectorAll('iframe')];
+ await Promise.all(frs.map(f=>new Promise(res=>{const go=()=>setTimeout(res,0);if(f.contentDocument&&f.contentDocument.readyState==='complete'&&f.contentDocument.body&&f.contentDocument.body.firstChild)return go();f.addEventListener('load',go);setTimeout(res,15000)})));
+ await Promise.all(frs.map(tplFontsFit));setTimeout(()=>window.print(),250)}
+function tplPrintPoster(m,title){const T=tplSel(tc.layout==='grid'?'poster-grid':'poster');if(!T)return false;tplPrintJob(tplPosterList(T,m).map(sp=>({kind:'frame',w:T.w,h:T.h,make:()=>tplSpecDoc(T,m,sp)})),title);return true}
+function tplPrintCerts(entries,title){const use=e=>{const T=e.tplId&&tplCache.get(e.tplId);return T&&T.kind==='certificate'?T:null};
+ if(!entries.some(use)){if(entries.some(e=>e.tplId))toast('The original design is no longer on this device, so the built-in design was used.',8000);return false}
+ if(entries.some(e=>e.tplId&&!use(e)))toast('Some certificates were issued with a design that is no longer on this device; those use the built-in design.',8000);
+ tplPrintJob(entries.map(e=>{const T=use(e);return T?{kind:'frame',w:T.w,h:T.h,make:()=>tplDoc(T,tplCertVals(e))}:{kind:'html',w:CW,h:CH,bg:'#fff',make:()=>tcCertHTML({...e,logo:SCH().logo})}}),title);return true}
+
+/* ---------- keeping designs on this device ---------- */
+let tplLoadP=null,tplDraft=null;
+function tplLoadAll(){if(tplLoadP)return tplLoadP;tplLoadP=(async()=>{let n=0;for(const meta of[...(S.tpls||[]),...(S.tplArch||[])]){if(tplCache.has(meta.id))continue;try{const rec=await idbGet('designs',meta.id);if(!rec||!rec.text)continue;const T=tplSanitize(rec.text);if(!T.ok)continue;T.id=meta.id;T.name=meta.name;T.kind=meta.kind;if(T.sizeAssumed){const d=TPL_SIZE[T.kind]||TPL_SIZE.certificate;T.w=d[0];T.h=d[1]}tplCache.set(meta.id,T);n++}catch(e){}}return n})();return tplLoadP}
+function tplBoot(){tplLoadAll().then(n=>{if(n&&view==='topx'&&!tplBoot.done){tplBoot.done=1;render()}})}
+setTimeout(()=>{try{tplLoadAll()}catch(e){}},700);
+function tplDownload(name,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/html'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+/* ---------- the "Your own designs" section ---------- */
+function tplCard(){const L=S.tpls||[];
+ return `<div class="card" id="tplCard"><h3 style="margin:0 0 4px">Your own designs</h3><div class="sub" style="margin:0 0 8px">Upload a poster or certificate design as an HTML file. The built-in designs stay available, and you choose between them with the <b>Design</b> list above. Designs are kept on this device only.</div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn y" onclick="$('#tplFile').click()">⬆ Upload a design (.html)</button><button class="btn" onclick="tplGuide()">How designs work</button><button class="btn" onclick="tplStarters()">Starter files</button></div>
+ <input id="tplFile" type="file" accept=".html,.htm,text/html" hidden onchange="tplUploadFile(this)" aria-label="Choose a design file">
+ ${L.length?`<div style="overflow-x:auto;margin-top:8px"><table class="rk" aria-label="Uploaded designs"><thead><tr><th>Name</th><th>Used for</th><th>Page</th><th></th></tr></thead><tbody>${L.map(t=>{const on=tplCache.has(t.id),cur=SCH()[TPL_KEY[t.kind]]===t.id,used=(S.certs||[]).filter(e=>e.tplId===t.id).length;
+  return `<tr><td><b>${esc(t.name)}</b>${cur?' <span class="tag">in use</span>':''}${used?`<div class="sub" style="margin:0">${used} issued certificate${used===1?'':'s'}</div>`:''}${on?'':'<div class="sub" style="margin:0;color:#7a5600">Not on this device. Upload the file again.</div>'}</td><td>${esc(TPL_KINDS[t.kind]||t.kind)}</td><td>${t.w}×${t.h}<div class="sub" style="margin:0">${Math.max(1,Math.round((t.size||0)/1024))} KB</div></td><td style="white-space:nowrap"><button class="btn" onclick="tplPreview('${t.id}')" ${on?'':'disabled'}>Preview</button> <button class="btn" onclick="tplUse('${t.id}')" ${on&&!cur?'':'disabled'}>Use</button> <button class="btn" onclick="tplRename('${t.id}')">Rename</button> <button class="btn" onclick="tplExport('${t.id}')" ${on?'':'disabled'}>Export</button> <button class="btn r" onclick="tplDelete('${t.id}')">Delete</button></td></tr>`}).join('')}</tbody></table></div>`:'<div class="sub" style="margin-top:8px">No uploaded designs yet.</div>'}</div>`}
+function tplUse(id){const t=(S.tpls||[]).find(x=>x.id===id);if(!t)return;tplPick(t.kind,id)}
+/* a design with sample or real data, for previews */
+const TPL_SAMPLE={name:'Juan Dela Cruz',name_upper:'DELA CRUZ, JUAN',first:'Juan',last:'Dela Cruz',rank:'1',rank_label:'TOP 1 STUDENT',grade:'96.50',grade_label:'ACADEMIC AVERAGE',subject:'Mathematics',subject_upper:'MATHEMATICS',photo:TPL_AVATAR,tied:'',index:'1',title_1:'TOP 8',title_2:'STUDENTS',category_line:'OVERALL ACADEMIC RANKING \u00b7 1ST QUARTER \u00b7 S.Y. 2026-2027 \u00b7 GRADE 10 - MABINI',period:'1st Quarter',period_phrase:'the 1st Quarter',year:'2026-2027',section:'Grade 10 - Mabini',grade_level:'Grade 10',count:'8',page:'1',pages:'1',school:'Sample National High School',school_upper:'SAMPLE NATIONAL HIGH SCHOOL',short:'SNHS',tag:'MAIN CAMPUS',campus:'Main Campus',address:'',logo:TC_LOGO,seal:'',date_text:'November 18, 2026',day:'____',month:'November',year4:'2026',teacher:'MS. JANE TEACHER',teacher_role:'Subject Teacher',teacher_sig:'',principal:'DR. MARIA PRINCIPAL',principal_role:'Principal',principal_sig:'',wording:'For achieving an academic average of 96.50 and attaining Rank 1 during the 1st Quarter, School Year 2026-2027. Given this ____ day of November 2026.',wording_html:'For achieving an academic average of 96.50 and attaining <b>Rank 1</b> during the 1st Quarter, School Year 2026-2027. Given this ____ day of November 2026.'};
+function tplSampleDoc(T){let m=null;try{m=tcModel()}catch(e){}
+ if(m&&!m.err&&m.rows.length){const row=m.rows[0],ms={...m,shown:m.shown.length?m.shown:[row]};
+  if(T.kind==='certificate')return tplDoc(T,tplCertVals(tcRec(m,row)));
+  const pv=tplPageVals(ms);if(T.kind==='poster')return tplDoc(T,{...pv,...tplStudentVals(ms,ms.shown[0],1),page:'1',pages:String(ms.shown.length)});
+  return tplDoc(T,{...pv,page:'1',pages:'1'},ms.shown.slice(0,T.perPage).map((r,i)=>tplStudentVals(ms,r,i+1)))}
+ if(T.kind==='poster-grid'){const names=['Juan Dela Cruz','Maria Santos','Pedro Reyes','Ana Garcia','Luis Bautista','Rosa Flores','Mark Lopez','Gina Navarro'];return tplDoc(T,{...TPL_SAMPLE,page:'1',pages:'1'},names.slice(0,T.perPage).map((n,i)=>({...TPL_SAMPLE,name:n,name_upper:n.toUpperCase(),rank:String(i+1),rank_label:'TOP '+(i+1)+' STUDENT',grade:(96.5-i*1.25).toFixed(2),tied:i===2?'TIED':'',index:String(i+1)})))}
+ return tplDoc(T,TPL_SAMPLE)}
+function tplPreview(id){const T=tplCache.get(id);if(!T)return;openModal(`<h3 style="margin-top:0">${esc(T.name)}</h3><div class="sub" style="margin:0 0 6px">${esc(TPL_KINDS[T.kind])} · ${T.w}×${T.h}. Shown with ${(()=>{try{const m=tcModel();return m&&!m.err&&m.rows.length?'the first student of the selected class':'sample data'}catch(e){return'sample data'}})()}.</div>${tcFrame(T.w,T.h,tplFrame(tplSampleDoc(T),T.w,T.h),'#fff')}<p><button class="btn y" onclick="tplClose()">Close</button></p>`);setTimeout(tcFit,0)}
+/* ---------- uploading ---------- */
+async function tplUploadFile(inp){const f=inp.files[0];inp.value='';if(!f)return;
+ if(!/\.(html?|xhtml)$/i.test(f.name)&&!/html/i.test(f.type))return toast('Choose an .html file.',6000);
+ if(f.size>TPL_MAX)return toast('That file is larger than 4 MB. Use smaller or fewer pictures.',8000);
+ let text;try{text=await f.text()}catch(e){return toast('That file could not be read.',6000)}
+ if(tplDraft)tplRelease(tplDraft.T);const T=tplSanitize(text);tplDraft={T,text,kind:T.kind||'',name:(T.name||f.name.replace(/\.[^.]+$/,'')).slice(0,60)};tplReviewPaint()}
+function tplClose(){tplRelease(tplDraft&&tplDraft.T);tplDraft=null;closeModal();setTimeout(()=>{const m=$('#mbox'),o=$('#modal');if(m&&o&&!o.classList.contains('on'))m.innerHTML=''},60)}
+function tplDraftKind(k){tplDraft.kind=k;tplReviewPaint()}
+function tplReviewPaint(){const d=tplDraft,T=d.T,chk=tplCheck(T,d.kind),dup=(S.tpls||[]).find(t=>t.name.toLowerCase()===d.name.trim().toLowerCase()&&t.kind===d.kind);let pv='';
+ if(T.ok&&!chk.errors.length){const T2={...T,kind:d.kind};try{pv=`<div style="margin:8px 0">${tcFrame(T.w,T.h,tplFrame(tplSampleDoc(T2),T.w,T.h),'#fff')}</div>`}catch(e){pv='<div class="smsg warn">A preview could not be drawn.</div>'}}
+ openModal(`<h3 style="margin-top:0">New design</h3><label>Name<input id="tpN" value="${esc(d.name)}" maxlength="60" oninput="tplDraft.name=this.value"></label>
+ <label>This design is for<select id="tpK" onchange="tplDraftKind(this.value)">${d.kind?'':'<option value="">Choose…</option>'}${Object.keys(TPL_KINDS).map(k=>`<option value="${k}" ${k===d.kind?'selected':''}>${esc(TPL_KINDS[k])}</option>`).join('')}</select></label>
+ ${T.ok?`<div class="sub" style="margin:6px 0">Page ${T.w} × ${T.h} px (${T.w>=T.h?'landscape':'portrait'}) · ${Math.max(1,Math.round(T.size/1024))} KB · placeholders found: ${T.tokens.length?T.tokens.map(t=>'<code>'+esc(t)+'</code>').join(' '):'none'}</div>`:''}
+ ${chk.errors.map(e=>`<div class="smsg bad">${esc(e)}</div>`).join('')}${chk.warnings.map(w=>`<div class="smsg warn">${esc(w)}</div>`).join('')}${pv}
+ ${dup?'<div class="sub" style="margin:4px 0">A design with this name and purpose already exists. Saving replaces it.</div>':''}
+ <p><button class="btn g" onclick="tplSaveDraft()" ${chk.errors.length?'disabled':''}>${dup?'Replace design':'Save design'}</button> <button class="btn" onclick="tplClose()">Cancel</button></p>`);setTimeout(tcFit,0)}
+async function tplSaveDraft(){const d=tplDraft;if(!d)return;const name=(d.name||'').trim().slice(0,60);if(!name)return toast('Give the design a name.',5000);if(tplCheck(d.T,d.kind).errors.length)return;
+ const L=S.tpls=S.tpls||[];const meta=L.find(t=>t.name.toLowerCase()===name.toLowerCase()&&t.kind===d.kind);
+ if(!meta&&L.length>=TPL_COUNT)return toast('You can keep up to '+TPL_COUNT+' designs. Delete one first.',8000);
+ const used=!!meta&&(S.certs||[]).some(e=>e.tplId===meta.id),id=(meta&&!used)?meta.id:uid();
+ if(meta&&used){(S.tplArch=S.tplArch||[]).push({...meta,archived:true,fam:meta.fam||meta.id});}
+ try{await idbPut('designs',id,{id,name,kind:d.kind,text:d.text,hash:d.T.hash,at:new Date().toISOString()})}catch(e){return toast('This device could not store the design ('+String(e&&e.message||'storage full').slice(0,60)+').',9000)}
+ const old=(meta&&!used)?tplCache.get(id):null;if(old)tplRelease(old);tplRelease(d.T);
+ const T=tplSanitize(d.text);T.id=id;T.name=name;T.kind=d.kind;if(T.sizeAssumed){const z=TPL_SIZE[d.kind];T.w=z[0];T.h=z[1]}tplCache.set(id,T);
+ const m={id,name,kind:d.kind,w:T.w,h:T.h,size:d.text.length,at:new Date().toISOString(),hash:T.hash,fam:(meta&&(meta.fam||meta.id))||id};if(meta)Object.assign(meta,m);else L.push(m);
+ tplDraft=null;tplClose();schSet(TPL_KEY[d.kind],id);toast('Design saved and now in use. Change it any time with the Design list.',6000);render()}
+function tplRename(id){const t=(S.tpls||[]).find(x=>x.id===id);if(!t)return;openModal(`<h3 style="margin-top:0">Rename design</h3><label>Name<input id="tpRn" value="${esc(t.name)}" maxlength="60"></label><p><button class="btn g" onclick="tplRenameSave('${id}')">Save</button> <button class="btn" onclick="closeModal()">Cancel</button></p>`)}
+function tplRenameSave(id){const t=(S.tpls||[]).find(x=>x.id===id),n=($('#tpRn').value||'').trim().slice(0,60);if(!t||!n)return toast('Give the design a name.',5000);t.name=n;const T=tplCache.get(id);if(T)T.name=n;closeModal();commit();render()}
+async function tplExport(id){const t=(S.tpls||[]).find(x=>x.id===id);try{const r=await idbGet('designs',id);if(!r||!r.text)return toast('The file is not on this device.',6000);tplDownload((t?t.name:'design').replace(/[^\w\- ]+/g,'')+'.html',r.text)}catch(e){toast('The file could not be read.',6000)}}
+async function tplDelete(id){const t=(S.tpls||[]).find(x=>x.id===id);if(!t)return;const fam=t.fam||t.id,arch=(S.tplArch||[]).filter(a=>(a.fam||a.id)===fam),ids=[id,...arch.map(a=>a.id)],used=(S.certs||[]).filter(e=>ids.includes(e.tplId)).length;
+ if(!confirm('Delete the design "'+t.name+'"?'+(used?'\n\n'+used+' issued certificate'+(used===1?' was':'s were')+' made with it. Reprinting those will use the built-in design instead.':'')))return;
+ for(const x of ids){try{await idbDel('designs',x)}catch(e){}tplRelease(tplCache.get(x));tplCache.delete(x)}S.tpls=(S.tpls||[]).filter(x=>x.id!==id);if(!S.tpls.length)delete S.tpls;S.tplArch=(S.tplArch||[]).filter(a=>!ids.includes(a.id));if(!S.tplArch.length)delete S.tplArch;if(SCH()[TPL_KEY[t.kind]]===id)schSet(TPL_KEY[t.kind],'');commit();render()}
+
+/* ---------- starter files and guide ---------- */
+const TPL_STARTERS={
+ certificate:{file:'certificate-starter.html',label:'Certificate',html:`<!doctype html>
+<html><head><meta charset="utf-8"><title>Classic certificate</title>
+<meta name="ecr-template" content="certificate"><meta name="ecr-size" content="1123x794">
+<style>
+body{background:#fffdf7;font-family:Georgia,"Times New Roman",serif;color:#1b2540}
+.f1{position:absolute;left:24px;top:24px;right:24px;bottom:24px;border:3px solid #b8903a}
+.f2{position:absolute;left:36px;top:36px;right:36px;bottom:36px;border:1px solid #b8903a}
+.logo{position:absolute;left:512px;top:54px;width:100px;height:96px;object-fit:contain}
+.school{position:absolute;left:100px;width:923px;top:158px;text-align:center;font:700 19px/1.2 Arial,Helvetica,sans-serif;letter-spacing:3px}
+.c1{position:absolute;left:0;width:1123px;top:196px;text-align:center;font:400 76px/1.1 Georgia,serif;letter-spacing:8px}
+.c2{position:absolute;left:0;width:1123px;top:286px;text-align:center;font:700 28px/1.2 Arial,Helvetica,sans-serif;letter-spacing:5px;color:#b8903a}
+.pre{position:absolute;left:0;width:1123px;top:344px;text-align:center;font:italic 20px/1.2 Georgia,serif}
+.name{position:absolute;left:120px;width:883px;top:376px;height:90px;text-align:center;font:400 70px/90px "Great Vibes","Segoe Script","Brush Script MT",cursive}
+.line{position:absolute;left:240px;width:643px;top:470px;border-top:2px solid #b8903a}
+.txt{position:absolute;left:170px;width:783px;top:490px;text-align:center;font:20px/1.5 Georgia,serif}
+.sig{position:absolute;top:596px;width:260px;text-align:center}
+.sig .im{height:62px;display:flex;align-items:flex-end;justify-content:center}.sig .im img{max-height:60px;max-width:240px}
+.sig .ln{border-top:2px solid #1b2540;margin-top:2px}.sig b{display:block;font:700 15px/1.3 Arial,Helvetica,sans-serif;text-transform:uppercase;margin-top:6px}.sig span{font:15px/1.3 Arial,Helvetica,sans-serif}
+.seal{position:absolute;left:521px;top:600px;width:80px;height:80px;object-fit:contain}
+</style></head><body>
+<div class="f1"></div><div class="f2"></div>
+<img class="logo" src="{{logo}}" alt="">
+<div class="school">{{school_upper}}</div>
+<div class="c1">CERTIFICATE</div><div class="c2">OF RECOGNITION</div>
+<div class="pre">This certificate is presented to</div>
+<div class="name" data-fit="center">{{name}}</div><div class="line"></div>
+<div class="txt">{{wording_html}}</div>
+<div class="sig" style="left:230px"><div class="im"><img src="{{teacher_sig}}" alt=""></div><div class="ln"></div><b>{{teacher}}</b><span>{{teacher_role}}</span></div>
+<div class="sig" style="left:633px"><div class="im"><img src="{{principal_sig}}" alt=""></div><div class="ln"></div><b>{{principal}}</b><span>{{principal_role}}</span></div>
+<img class="seal" src="{{seal}}" alt="">
+</body></html>
+`},
+ poster:{file:'poster-one-student-starter.html',label:'Poster, one student per page',html:`<!doctype html>
+<html><head><meta charset="utf-8"><title>Navy and gold poster</title>
+<meta name="ecr-template" content="poster"><meta name="ecr-size" content="1600x1131">
+<style>
+body{background:linear-gradient(160deg,#0b2250 0%,#12307a 60%,#2a5ca8 100%);font-family:Arial,Helvetica,sans-serif;color:#fff}
+.band{position:absolute;left:0;right:0;bottom:0;height:130px;background:linear-gradient(90deg,#d9b560,#f3dd95,#c9a24a)}
+.logo{position:absolute;left:60px;top:44px;width:140px;height:130px;object-fit:contain}
+.short{position:absolute;left:220px;top:48px;width:560px;font:800 72px/1 Arial,Helvetica,sans-serif}
+.school{position:absolute;left:222px;top:134px;width:560px;font:600 22px/1.3 Arial,Helvetica,sans-serif;letter-spacing:1px}
+.tag{position:absolute;left:222px;top:196px;width:560px;font:800 30px/1 Arial,Helvetica,sans-serif;color:#e3c46f}
+.t1{position:absolute;left:860px;top:50px;width:690px;height:180px;font:700 160px/180px "Oswald","Arial Narrow",Impact,sans-serif;text-transform:uppercase}
+.t2{position:absolute;left:860px;top:225px;width:690px;height:150px;font:700 128px/150px "Oswald","Arial Narrow",Impact,sans-serif;text-transform:uppercase;color:#e3c46f}
+.cat{position:absolute;left:860px;top:395px;width:690px;font:600 19px/1.4 Arial,Helvetica,sans-serif;letter-spacing:.5px;color:#dfe8fb}
+.ph{position:absolute;left:120px;top:290px;width:580px;height:580px;border-radius:50%;border:16px solid #d9b560;background:#31466f center/cover no-repeat;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.medal{position:absolute;left:330px;top:820px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff1b8,#d9b560 55%,#a67c2b);border:6px solid #b88a2e;color:#111;text-align:center;font:800 90px/148px Arial,Helvetica,sans-serif}
+.c1,.c2{position:absolute;left:860px;width:690px;border:3px solid #d9b560;border-radius:34px;background:#0b2250;box-sizing:border-box;padding:26px 36px}
+.c1{top:520px;height:210px}.c2{top:770px;height:210px}
+.nm{height:60px;font:800 46px/60px Arial,Helvetica,sans-serif;color:#e3c46f}
+.rl{margin-top:16px;font:800 28px/1.2 Arial,Helvetica,sans-serif}
+.gl{font:800 28px/1.2 Arial,Helvetica,sans-serif}.gv{margin-top:6px;font:800 92px/1 Arial,Helvetica,sans-serif;color:#e3c46f}
+.tied{position:absolute;right:30px;top:20px;font:700 20px Arial,Helvetica,sans-serif;color:#e3c46f;letter-spacing:2px}
+</style></head><body>
+<div class="band"></div>
+<img class="logo" src="{{logo}}" alt=""><div class="short">{{short}}</div><div class="school">{{school_upper}}</div><div class="tag">{{tag}}</div>
+<div class="t1" data-fit>{{title_1}}</div><div class="t2" data-fit>{{title_2}}</div><div class="cat">{{category_line}}</div>
+<div class="ph" style="background-image:url({{photo}})"></div><div class="medal">{{rank}}</div>
+<div class="c1"><div class="nm" data-fit>{{name_upper}}</div><div class="rl">{{rank_label}}</div><div class="tied" data-show-if="tied">{{tied}}</div></div>
+<div class="c2"><div class="gl">{{grade_label}}</div><div class="gv">{{grade}}</div></div>
+</body></html>
+`},
+ grid:{file:'poster-several-students-starter.html',label:'Poster, several students per page',html:`<!doctype html>
+<html><head><meta charset="utf-8"><title>Navy and gold overview poster</title>
+<meta name="ecr-template" content="poster-grid"><meta name="ecr-size" content="1600x1131">
+<style>
+body{background:linear-gradient(160deg,#0b2250 0%,#12307a 65%,#2a5ca8 100%);font-family:Arial,Helvetica,sans-serif;color:#fff}
+.logo{position:absolute;left:60px;top:40px;width:130px;height:120px;object-fit:contain}
+.short{position:absolute;left:210px;top:44px;width:560px;font:800 64px/1 Arial,Helvetica,sans-serif}
+.school{position:absolute;left:212px;top:120px;width:560px;font:600 20px/1.3 Arial,Helvetica,sans-serif;letter-spacing:1px}
+.tag{position:absolute;left:212px;top:176px;width:560px;font:800 26px/1 Arial,Helvetica,sans-serif;color:#e3c46f}
+.t1{position:absolute;left:860px;top:30px;width:690px;height:130px;font:700 112px/130px "Oswald","Arial Narrow",Impact,sans-serif;text-transform:uppercase}
+.t2{position:absolute;left:860px;top:150px;width:690px;height:110px;font:700 90px/110px "Oswald","Arial Narrow",Impact,sans-serif;text-transform:uppercase;color:#e3c46f}
+.cat{position:absolute;left:60px;top:250px;width:1480px;font:600 19px/1.4 Arial,Helvetica,sans-serif;letter-spacing:.5px;color:#dfe8fb}
+.grid{position:absolute;left:60px;top:310px;width:1480px;display:grid;grid-template-columns:repeat(4,347px);gap:26px;justify-content:space-between}
+.card{position:relative;height:376px;border:3px solid #d9b560;border-radius:30px;background:#0b2250;text-align:center;padding-top:24px;box-sizing:border-box}
+.ph{width:170px;height:170px;margin:0 auto;border-radius:50%;border:8px solid #d9b560;background:#31466f center/cover no-repeat}
+.rk{position:absolute;left:16px;top:16px;width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#f6e3a0,#c9a24a);border:3px solid #b88a2e;color:#111;font:800 32px/60px Arial,Helvetica,sans-serif;text-align:center}
+.nm{margin:14px 14px 0;height:58px;font:800 22px/1.15 Arial,Helvetica,sans-serif;color:#e3c46f;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.gr{margin:10px 28px 0;border:2px solid rgba(217,181,96,.6);border-radius:18px;padding:8px 0}.gr small{display:block;font:700 13px Arial,Helvetica,sans-serif;letter-spacing:.6px}.gr b{font:800 34px/1.1 Arial,Helvetica,sans-serif;color:#e3c46f}
+.tied{position:absolute;right:16px;top:20px;font:700 13px Arial,Helvetica,sans-serif;color:#e3c46f;letter-spacing:1px}
+</style></head><body>
+<img class="logo" src="{{logo}}" alt=""><div class="short">{{short}}</div><div class="school">{{school_upper}}</div><div class="tag">{{tag}}</div>
+<div class="t1" data-fit>{{title_1}}</div><div class="t2" data-fit>{{title_2}}</div><div class="cat">{{category_line}}</div>
+<div class="grid"><div class="card" data-repeat="students" data-per-page="8"><div class="rk">{{rank}}</div><div class="ph" style="background-image:url({{photo}})"></div><div class="nm">{{name_upper}}</div><div class="gr"><small>{{grade_label}}</small><b>{{grade}}</b></div><div class="tied" data-show-if="tied">{{tied}}</div></div></div>
+</body></html>
+`}};
+function tplStarters(){openModal(`<h3 style="margin-top:0">Starter files</h3><p class="sub">Three small working examples. Download one, change the look in any text editor (or send it to Claude with your design), then upload it with <b>Upload a design</b>.</p>${Object.keys(TPL_STARTERS).map(k=>`<div style="margin:6px 0"><button class="btn" onclick="tplDownload(TPL_STARTERS['${k}'].file,TPL_STARTERS['${k}'].html)">⬇ ${esc(TPL_STARTERS[k].label)}</button></div>`).join('')}<p><button class="btn y" onclick="closeModal()">Close</button></p>`)}
+function tplGuide(){const rows=(a,d)=>a.map(t=>`<code>{{${t}}}</code>`).join(' ');
+ openModal(`<h3 style="margin-top:0">How your own designs work</h3><div style="max-height:68vh;overflow:auto;font-size:13px;line-height:1.5">
+ <p><b>A design is one HTML file.</b> Put <code>{{placeholders}}</code> where information goes. The app fills them in for every student and prints one page per student (or several students per page for the overview poster).</p>
+ <p><b>Rules for the file</b></p><ul><li>One file. Pictures and fonts must be <b>inside</b> the file (base64). Links to other sites are removed.</li><li>No scripts. They are removed and cannot run.</li><li>Add <code>&lt;meta name="ecr-template" content="certificate"&gt;</code> (or <code>poster</code>, <code>poster-grid</code>) and <code>&lt;meta name="ecr-size" content="1123x794"&gt;</code> (the page size in pixels).</li><li>Position things with absolute positions or a fixed layout inside that page size.</li></ul>
+ <p><b>About the student</b><br>${rows(TPL_STUDENT.filter(t=>t!=='index'))}</p>
+ <p><b>About the page</b><br>${rows(TPL_PAGE)}</p>
+ <p><b>Useful attributes</b></p><ul><li><code>data-fit</code> on a text box shrinks long text to fit its width (use <code>data-fit="center"</code> for centred text).</li><li><code>data-show-if="tied"</code> shows an item only when that value is not empty. <code>data-hide-if</code> does the opposite.</li><li>Photos: <code>src="{{photo}}"</code> on an image, or <code>style="background-image:url({{photo}})"</code> on a shape.</li><li><b>Several students per page:</b> mark one block <code>data-repeat="students" data-per-page="8"</code>. It is repeated for each student.</li></ul>
+ <p><b>Have your design as a picture, PowerPoint or Word file?</b> Send it to Claude and ask for it as a design file for this app. Then upload the result here.</p>
+ <p class="sub">Designs stay on this device. Use Export to copy one to another device. Certificates remember which design they were made with.</p></div><p><button class="btn y" onclick="closeModal()">Close</button></p>`)}
+/* ===== Top Student poster: who is eligible =====
+   Everyone is eligible until they are unticked, so existing posters do not change. The setting belongs to the student
+   (l.noPoster). It only affects posters; certificates are not touched. */
+const posterOk=l=>!l.noPoster;
+function posterElig(lid,on){const l=findL(lid);if(!l)return;if(on)delete l.noPoster;else l.noPoster=true;commit();render()}
+function posterAll(on){const m=tcModel();if(!m||m.err)return;(m.N===Infinity?m.rows:m.shown).forEach(r=>{if(on)delete r.l.noPoster;else r.l.noPoster=true});commit();render()}
+/* the model the poster is drawn from: the selected group, minus students who are not eligible */
+function tcPosterModel(m){if(!m||m.err)return m;const all=m.shown,pick=all.filter(r=>posterOk(r.l)),cut=pick.length<all.length;let title=m.title;
+ if(cut&&pick.length){const n=pick.length,mx=Math.max(...pick.map(r=>r.rank));title=mx<=n?['TOP '+n,n===1?'STUDENT':'STUDENTS']:['TOP','STUDENTS']}
+ return{...m,shown:pick,title,pcut:cut,pgroup:all.length}}
+function tcPosterEmpty(m0){if(!m0||m0.err)return'';if(!m0.rows.length)return'There are no ranked students to put on a poster yet.';
+ if(!m0.rows.some(r=>posterOk(r.l)))return'No eligible students selected for the Top Student Poster.';
+ if(!m0.shown.some(r=>posterOk(r.l)))return'None of the students marked eligible are in the selected group. Choose a larger group, for example the complete class ranking.';return''}
+function posterMsg(t){const e=$('#tcPMsg');if(!e)return toast(t,7000);e.textContent=t;e.hidden=false;e.scrollIntoView({block:'nearest'});clearTimeout(posterMsg.t);posterMsg.t=setTimeout(()=>{e.hidden=true},9000)}
+function posterBar(m,rows){const on=rows.filter(r=>posterOk(r.l)).length;
+ return `<div class="pbar" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 2px"><b>Top Student Poster:</b><span class="sub" style="margin:0" id="pCount">${on} of ${rows.length} student${rows.length===1?'':'s'} will appear</span><button class="btn" onclick="posterAll(true)">Include all</button><button class="btn" onclick="posterAll(false)">Include none</button></div>`}
 window.addEventListener('beforeunload',e=>{if(dirty){save()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&CF.tok&&!dirty)cloudSync()});if(CF.tok)cloudSync();
 render();
-
-/* ===== Import scores from an uploaded Excel (same layout as the DepEd Class Record workbook) =====
-   Reads the 1st-4th Quarter sheets, matches every learner name to the learners already recorded in each section,
-   and copies Written Works, Performance Tasks and Quarterly Assessment ONLY for the matched learners. Each score
-   is taken from the same row as the name it belongs to, and the Excel's own Quarterly Grade is compared with the
-   grade the app works out, so you can see the scores landed on the right learner. */
-const XI={d:null,plan:[],o:{hps:true,ow:true,w:true},undo:null};
-const xiNorm=s=>String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9, ]+/g,' ').replace(/\s+/g,' ').trim();
-const xiToks=s=>xiNorm(s).split(/[ ,]+/).filter(x=>x.length>1);
-const xiKey=s=>xiToks(s).join('').split('').sort().join('');
-const xiDec=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,(m,n)=>String.fromCharCode(+n)).replace(/&#x([0-9a-f]+);/gi,(m,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,'&');
-const xiCol=s=>{let n=0;for(const ch of s)n=n*26+ch.charCodeAt(0)-64;return n};
-const xiS=v=>String(Math.round(v*1e6)/1e6);
-const xiPh=s=>/^\{.*\}$/.test(s)||/^NAME\s*\d*$/i.test(s);
-function xiShared(xml){const out=[];if(!xml)return out;const re=/<si\b[^>]*?(?:\/>|>([\s\S]*?)<\/si>)/g;let m;while((m=re.exec(xml))){let t='';(m[1]||'').replace(/<rPh\b[\s\S]*?<\/rPh>/g,'').replace(/<t\b[^>]*>([\s\S]*?)<\/t>/g,(a,b)=>{t+=b;return''});out.push(xiDec(t))}return out}
-function xiCells(xml,sh){const M=new Map(),re=/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;let m;
- while((m=re.exec(xml))){const at=m[1],body=m[2];if(!body)continue;const ref=/\br="([A-Z]+)(\d+)"/.exec(at);if(!ref)continue;const r=+ref[2],c=xiCol(ref[1]);if(r>125||c>49)continue;
-  const t=(/\bt="(\w+)"/.exec(at)||[])[1];let v=null;
-  if(t==='inlineStr'){let s='';body.replace(/<t\b[^>]*>([\s\S]*?)<\/t>/g,(a,b)=>{s+=b;return''});v=xiDec(s)}
-  else{const mv=/<v>([\s\S]*?)<\/v>/.exec(body);if(!mv)continue;const raw=mv[1];
-   if(t==='s')v=sh[+raw]===undefined?null:sh[+raw];else if(t==='str')v=xiDec(raw);else if(t==='b')v=raw==='1';else if(t==='e')v=null;else{const n=parseFloat(raw);v=isNaN(n)?null:n}}
-  if(v!==null&&v!=='')M.set(r*100+c,v)}
- return M}
-function xiQ(n){const u=xiNorm(n);if(/SEM/.test(u)||!/QUARTER|QTR|\bQ[1-4]\b/.test(u))return 0;for(const[r,q]of[[/\b(1ST|FIRST|Q1)\b/,1],[/\b(2ND|SECOND|Q2)\b/,2],[/\b(3RD|THIRD|Q3)\b/,3],[/\b(4TH|FOURTH|Q4)\b/,4]])if(r.test(u))return q;return 0}
-const xiPct=v=>{if(typeof v==='number')return v<=1?Math.round(v*100):Math.round(v);const m=/^\s*(\d+(?:\.\d+)?)\s*%?\s*$/.exec(String(v||''));return m?Math.round(+m[1]):null};
-async function xiRead(file){await ecrJSZip();const z=await JSZip.loadAsync(await file.arrayBuffer());
- const f=p=>z.file(p)?z.file(p).async('string'):Promise.resolve('');
- const wbx=await f('xl/workbook.xml');if(!wbx)throw new Error('This is not an Excel (.xlsx) workbook.');
- const rel=await f('xl/_rels/workbook.xml.rels'),sh=xiShared(await f('xl/sharedStrings.xml')),rid={};
- rel.replace(/<Relationship\b([^>]*)>/g,(a,at)=>{const i=/\bId="([^"]+)"/.exec(at),t=/\bTarget="([^"]+)"/.exec(at);if(i&&t)rid[i[1]]=t[1];return''});
- const sheets=[];wbx.replace(/<sheet\b([^>]*)>/g,(a,at)=>{const n=/\bname="([^"]*)"/.exec(at),i=/\br:id="([^"]+)"/.exec(at);if(n&&i&&rid[i[1]])sheets.push({name:xiDec(n[1]),p:rid[i[1]].replace(/^\//,'').replace(/^(?!xl\/)/,'xl/')});return''});
- const qs=[],cells={},skipped=[];
- for(const s of sheets){const q=xiQ(s.name);if(!q){skipped.push(s.name);continue}const xml=await f(s.p);if(!xml)continue;const M=xiCells(xml,sh);
-  if(!/WRITTEN/i.test(String(M.get(9*100+7)||''))){skipped.push(s.name);continue}cells[q]=M;qs.push(q)}
- if(!qs.length)throw new Error('No "1st Quarter" … "4th Quarter" sheets in the Class Record layout were found in this file.');
- qs.sort();const g=(q,r,c)=>{const v=cells[q].get(r*100+c);return v===undefined?null:v},num=(q,r,c)=>{const v=g(q,r,c);return typeof v==='number'?v:null};
- const rows=[];for(let r=14;r<=63;r++)rows.push([r,'M']);for(let r=67;r<=116;r++)rows.push([r,'F']);
- const roster=[],warns=[],byRow=new Map();
- for(const q of qs)for(const[r,sex]of rows){const nm=String(g(q,r,3)||'').trim();if(nm&&!xiPh(nm)&&!byRow.has(r)){const o={r,sex,name:nm,lrn:String(g(q,r,2)||'').replace(/\.0+$/,''),q:{}};byRow.set(r,o);roster.push(o)}}
- const d={file:file.name,qs,q:{},roster,warns,skipped,hdr:{}};
- for(const q of qs){const arr=(c0)=>Array.from({length:10},(_,i)=>num(q,11,c0+i));
-  d.q[q]={hps:{ww:arr(7),pt:arr(20),qa:num(q,11,33)}};
-  for(const x of roster){const nm=String(g(q,x.r,3)||'').trim();
-   if(nm&&!xiPh(nm)&&xiKey(nm)!==xiKey(x.name)){warns.push(`Row ${x.r}: the name on the ${q}${['st','nd','rd','th'][q-1]} Quarter sheet ("${nm}") differs from the 1st sheet ("${x.name}"). That row was skipped for this quarter.`);continue}
-   const ww=Array.from({length:10},(_,i)=>num(q,x.r,7+i)),pt=Array.from({length:10},(_,i)=>num(q,x.r,20+i)),qa=num(q,x.r,33);
-   x.q[q]={ww,pt,qa,qg:num(q,x.r,37),has:ww.some(v=>v!==null)||pt.some(v=>v!==null)||qa!==null}}}
- const q0=qs[0];d.hdr.section=String(g(q0,7,12)||'');d.hdr.teacher=String(g(q0,7,20)||'');
- for(const q of qs){const s=g(q,7,34);if(s){d.hdr.subject=String(s).trim();break}}
- const w=[g(q0,11,19),g(q0,11,32),g(q0,11,35)].map(xiPct);if(w.every(v=>v!==null)&&w[0]+w[1]+w[2]===100)d.hdr.w=w;
- return d}
-function xiFind(x,L){let best=0,hits=[];const xt=xiToks(x.name),xk=xiKey(x.name),lr=String(x.lrn||'').replace(/\D/g,'');
- for(const l of L){const lt=xiToks((l.last||'')+' '+(l.first||'')),ll=String(l.lrn||'').replace(/\D/g,'');let k=0;
-  if(lr.length>=6&&ll===lr&&lt.some(t=>xt.includes(t)))k=4;
-  else if(xiKey((l.last||'')+' '+(l.first||''))===xk)k=3;
-  else if(lt.length&&xt.length){const sm=lt.length<=xt.length?lt:xt,lg=sm===lt?xt:lt;if(sm.length>=2&&sm.every(t=>lg.includes(t)))k=2}
-  if(k>best){best=k;hits=[l]}else if(k&&k===best)hits.push(l)}
- if(hits.length>1){const s=hits.filter(l=>l.sex===x.sex);if(s.length)hits=s}
- return hits.length===1?{l:hits[0],k:best}:best?{amb:true}:null}
-function xiBuild(){const d=XI.d,P=[],secT=xiToks(d.hdr.section||'');
- for(const c of S.classes){
-  if(c.mode!=='num'||!c.ns||!c.ns.length){P.push({c,skip:'uses descriptive grading (no scores to copy into)'});continue}
-  let ms=[],amb=[];
-  for(const x of d.roster){const r=xiFind(x,c.learners||[]);if(!r)continue;if(r.amb)amb.push(x);else ms.push({x,l:r.l,k:r.k})}
-  const use={};ms.forEach(m=>(use[m.l.id]||(use[m.l.id]=[])).push(m));
-  ms=ms.filter(m=>{const g=use[m.l.id];if(g.length===1)return true;const top=Math.max(...g.map(z=>z.k));const w=g.filter(z=>z.k===top);if(w.length===1&&w[0]===m)return true;if(!w.includes(m)||w.length>1)amb.push(m.x);return false});
-  ms.sort((a,b)=>a.x.r-b.x.r);ms.forEach(m=>m.on=m.k>=3);
-  const ct=xiToks(c.name),secHit=!!secT.length&&ct.length>0&&ct.every(t=>secT.includes(t));
-  let sub=0;const sn=xiNorm(d.hdr.subject||'');
-  if(sn){const i=c.ns.findIndex(s=>{const n=xiNorm(s.n);return n&&(n===sn||n.includes(sn)||sn.includes(n))});if(i>=0)sub=i;else sub=c.id===S.cur?Math.min(tab,c.ns.length-1):0;}
-  else sub=c.id===S.cur?Math.min(tab,c.ns.length-1):0;
-  const exact=!!sn&&c.ns.some(s=>{const n=xiNorm(s.n);return n&&(n===sn||n.includes(sn)||sn.includes(n))});
-  P.push({c,ms,amb,secHit,sub,subKnown:exact||!sn,on:false})}
- const any=P.some(p=>p.ms&&p.ms.length&&p.secHit);
- P.forEach(p=>{if(p.ms)p.on=p.ms.length>0&&(!any||p.secHit)});
- XI.plan=P}
-function xiHps(h,ex,on){const o={ww:[],pt:[],qa:h&&h.qa!==undefined?h.qa:''};for(let i=0;i<10;i++){o.ww[i]=on&&ex.ww[i]!==null?xiS(ex.ww[i]):(h&&h.ww&&h.ww[i]!==undefined?h.ww[i]:'');o.pt[i]=on&&ex.pt[i]!==null?xiS(ex.pt[i]):(h&&h.pt&&h.pt[i]!==undefined?h.pt[i]:'')}if(on&&ex.qa!==null)o.qa=xiS(ex.qa);return o}
-function xiArr(base,ex,ow){const o=[];for(let i=0;i<10;i++){const b=base&&base[i]!==undefined?base[i]:'';o[i]=ex[i]!==null&&(ow||E(b))?xiS(ex[i]):b}return o}
-const xiW=sb=>XI.o.w&&XI.d.hdr.w?XI.d.hdr.w:(sb?sb.w:(S.p.dw||[25,50,25]));
-function xiQG(sb,m,q){const X=m.x.q[q];if(!X||!X.has)return null;const d=sb&&sb.q&&sb.q[q]?sb.q[q]:{h:{ww:[],pt:[],qa:''},s:{}},H=xiHps(d.h,XI.d.q[q].hps,XI.o.hps),A=(d.s&&d.s[m.l.id])||{ww:[],pt:[],qa:''};
- const Sx={ww:xiArr(A.ww,X.ww,XI.o.ow),pt:xiArr(A.pt,X.pt,XI.o.ow),qa:X.qa!==null&&(XI.o.ow||E(A.qa))?xiS(X.qa):(A.qa===undefined?'':A.qa)};return calc(H,Sx,xiW(sb)).qg}
-function xiOpen(){const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xlsm';i.onchange=()=>{if(i.files[0])xiPick(i.files[0])};i.click()}
-async function xiPick(file){try{toast('Reading '+file.name+'…',4000);XI.d=await xiRead(file);xiBuild();XI.undo=null;xiShow()}catch(e){toast('Could not read that file: '+(e&&e.message||e),7000)}}
-function xiShow(){const box=$('#mbox'),top=box.scrollTop,d=XI.d,qn=q=>['1st','2nd','3rd','4th'][q-1],o=XI.o;
- const matchedAny=XI.plan.some(p=>p.ms&&p.ms.length);
- const used=new Set();XI.plan.forEach(p=>p.ms&&p.ms.forEach(m=>used.add(m.x.r)));
- const lost=d.roster.filter(x=>!used.has(x.r));
- const cards=XI.plan.map((p,pi)=>{
-  if(p.skip)return `<div class="card" style="padding:10px;margin-bottom:8px;opacity:.7"><b>${esc(p.c.name)}</b> <span class="sub" style="margin:0">— ${esc(p.skip)}</span></div>`;
-  if(!p.ms.length)return `<div class="card" style="padding:10px;margin-bottom:8px;opacity:.7"><b>${esc(p.c.name)}</b> <span class="sub" style="margin:0">— no learner in this section matches a name in the Excel</span></div>`;
-  const sb=p.sub>=0?p.c.ns[p.sub]:null,opts=p.c.ns.map((s,i)=>`<option value="${i}" ${i===p.sub?'selected':''}>${esc(s.n)}</option>`).join('')+`<option value="-1" ${p.sub<0?'selected':''}>➕ New subject: ${esc(d.hdr.subject||'Subject')}</option>`;
-  const rows=p.ms.map((m,mi)=>{
-   const cells=d.qs.map(q=>{const X=m.x.q[q];if(!X||!X.has)return '<td style="text-align:center;color:var(--mut)">—</td>';const g=xiQG(sb,m,q);
-    const xg=X.qg,txt=g===''||g===null?'<span style="color:var(--mut)">no grade</span>':String(g);
-    if(xg===null||xg===undefined)return `<td style="text-align:center">${txt}</td>`;
-    if(g!==''&&g!==null&&Math.abs(+g-xg)<0.5)return `<td style="text-align:center"><span class="ok">✓</span> ${txt}</td>`;
-    return `<td style="text-align:center;color:var(--red);font-weight:700" title="The Excel shows ${xg}, the app works out ${g===''?'no grade':g}. Check the weights, highest possible scores or the matched learner.">⚠ ${txt} <small>(Excel ${xg})</small></td>`}).join('');
-   return `<tr><td><input type="checkbox" ${m.on?'checked':''} onchange="xiTogM(${pi},${mi},this.checked)"></td><td>${esc(m.l.last)}, ${esc(m.l.first)}</td><td>${esc(m.x.name)}</td><td>${m.k===4?'LRN':m.k===3?'Exact':'<b style="color:#c98a00">Close – check</b>'}</td>${cells}</tr>`}).join('');
-  return `<div class="card" style="padding:12px;margin-bottom:10px"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><label style="display:flex;gap:6px;align-items:center;font-size:14px;color:inherit"><input type="checkbox" ${p.on?'checked':''} onchange="xiTogC(${pi},this.checked)"><b>${esc(p.c.name)}</b></label><span class="sub" style="margin:0">${p.ms.length} learner${p.ms.length===1?'':'s'} matched${p.secHit?' · section matches the file':''}</span><label style="margin-left:auto;display:flex;gap:6px;align-items:center">Copy into subject <select onchange="xiSub(${pi},this.value)">${opts}</select></label></div>
-   ${!p.subKnown&&p.sub>=0?`<div class="sub" style="margin:4px 0;color:#7a5600">The file's subject is “${esc(d.hdr.subject)}”, which is not one of this section's subjects. Check the subject box.</div>`:''}
-   <div style="max-height:260px;overflow:auto;margin-top:8px"><table class="gt" style="font-size:12px"><tr><th></th><th style="text-align:left">Learner in app</th><th style="text-align:left">Name in Excel</th><th>Match</th>${d.qs.map(q=>`<th>${qn(q)} Qtr grade</th>`).join('')}</tr>${rows}</table></div>
-   ${p.amb.length?`<div class="sub" style="margin:6px 0 0;color:#7a5600">Skipped (more than one possible learner): ${p.amb.map(x=>esc(x.name)).join('; ')}</div>`:''}</div>`}).join('');
- const total=XI.plan.reduce((n,p)=>n+(p.ms&&p.on?p.ms.filter(m=>m.on).length:0),0);
- openModal(`<h3 style="margin-top:0">Import scores from Excel</h3>
-  <p class="sub" style="margin:0 0 6px"><b>${esc(d.file)}</b> · Quarters found: ${d.qs.map(qn).join(', ')}${d.hdr.section?' · Section in file: <b>'+esc(d.hdr.section)+'</b>':''}${d.hdr.subject?' · Subject: <b>'+esc(d.hdr.subject)+'</b>':''}</p>
-  <p class="sub" style="margin:0 0 8px">Only learners whose names match a learner already in the section get scores, copied from their own row in the Excel. Learners who are not in the Excel, and blank Excel cells, are left exactly as they are.</p>
-  ${d.warns.length?`<div class="smsg warn" style="margin:0 0 8px">${d.warns.slice(0,5).map(esc).join('<br>')}${d.warns.length>5?'<br>…and '+(d.warns.length-5)+' more':''}</div>`:''}
-  <div style="display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 10px;font-size:13px">
-   <label style="display:flex;gap:6px;align-items:center;color:inherit"><input type="checkbox" ${o.hps?'checked':''} onchange="xiOpt('hps',this.checked)">Copy the Highest Possible Scores</label>
-   <label style="display:flex;gap:6px;align-items:center;color:inherit"><input type="checkbox" ${o.ow?'checked':''} onchange="xiOpt('ow',this.checked)">Replace scores already in the app</label>
-   ${d.hdr.w?`<label style="display:flex;gap:6px;align-items:center;color:inherit"><input type="checkbox" ${o.w?'checked':''} onchange="xiOpt('w',this.checked)">Use the Excel's weights (WW ${d.hdr.w[0]}% · PT ${d.hdr.w[1]}% · QA ${d.hdr.w[2]}%)</label>`:''}</div>
-  <p class="sub" style="margin:0 0 6px">The grade column compares the Excel's Quarterly Grade with the grade the app will show: <span class="ok">✓</span> means they agree.</p>
-  ${matchedAny?cards:'<div class="card">No learner name in this Excel matches a learner recorded in any section. Check the spelling of the names, or add the learners under Learners first.</div>'}
-  ${lost.length&&matchedAny?`<details style="margin:4px 0 10px"><summary class="sub" style="cursor:pointer">${lost.length} name${lost.length===1?'':'s'} in the Excel matched no one (nothing copied)</summary><div style="font-size:12px;margin-top:4px">${lost.map(x=>esc(x.name)).join('; ')}</div></details>`:''}
-  <div style="text-align:right;margin-top:10px"><button class="btn" onclick="closeModal()">Cancel</button> <button class="btn y" ${total?'':'disabled'} onclick="xiApply()">Import scores for ${total} learner${total===1?'':'s'}</button></div>`);
- $('#mbox').classList.add('wide');$('#mbox').scrollTop=top}
-function xiTogC(i,v){XI.plan[i].on=v;xiShow()}
-function xiTogM(i,j,v){XI.plan[i].ms[j].on=v;xiShow()}
-function xiSub(i,v){XI.plan[i].sub=+v;xiShow()}
-function xiOpt(k,v){XI.o[k]=v;xiShow()}
-function xiApply(){const d=XI.d,o=XI.o,undo=[];let nS=0,nL=0;const secs=[];
- for(const p of XI.plan){if(!p.ms||!p.on)continue;const picks=p.ms.filter(m=>m.on);if(!picks.length)continue;const c=p.c;let sb,created=false;
-  if(p.sub<0){sb={n:d.hdr.subject||'Subject '+(c.ns.length+1),w:(S.p.dw||[25,50,25]).slice(),q:{}};c.ns.push(sb);created=true}else sb=c.ns[p.sub];
-  sb.q=sb.q||{};undo.push({c,sb,q:JSON.stringify(sb.q),w:sb.w.slice(),created});
-  if(o.w&&d.hdr.w)sb.w=d.hdr.w.slice();
-  for(const q of d.qs){const D=d.q[q],dd=QD(sb,q);if(o.hps){const H=xiHps(dd.h,D.hps,true);dd.h.ww=H.ww;dd.h.pt=H.pt;dd.h.qa=H.qa}
-   for(const m of picks){const X=m.x.q[q];if(!X||!X.has)continue;const A=SD(dd,m.l.id);A.ww=xiArr(A.ww,X.ww,o.ow);A.pt=xiArr(A.pt,X.pt,o.ow);if(X.qa!==null&&(o.ow||E(A.qa)))A.qa=xiS(X.qa);nS++}}
-  nL+=picks.length;secs.push(`${esc(c.name)} → ${esc(sb.n)}: ${picks.length}`)}
- XI.undo=undo;commit();render();
- openModal(`<h3 style="margin-top:0">Scores imported ✓</h3><p>Scores were copied for <b>${nL}</b> learner${nL===1?'':'s'} (${nS} quarter record${nS===1?'':'s'}).</p><div class="sub">${secs.join('<br>')}</div><p class="sub">Open the Class Record to review them. Nothing else was changed.</p><div style="text-align:right"><button class="btn r" style="float:left" onclick="xiUndo()">Undo this import</button><button class="btn y" onclick="closeModal()">Done</button></div>`)}
-function xiUndo(){if(!XI.undo)return;for(const u of XI.undo){u.sb.q=JSON.parse(u.q);u.sb.w=u.w;if(u.created){const i=u.c.ns.indexOf(u.sb);if(i>=0)u.c.ns.splice(i,1)}}XI.undo=null;tab=0;commit();closeModal();render();toast('Import undone')}
-const xiClose0=closeModal;closeModal=function(){const b=$('#mbox');if(b)b.classList.remove('wide');return xiClose0.apply(this,arguments)};
 </script></body></html>
