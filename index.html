@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="app-version" content="2026.11.25-4"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="app-version" content="2026.11.28-1"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Auto E-Class Record 2026</title>
 <style>
 :root{--navy:#0f1f3d;--yel:#f6c23e;--grn:#1fa971;--red:#d6394a;--bg:#f4f6fb;--line:#e3e7f0;--mut:#6b7590}
@@ -32,6 +32,7 @@ td input,td select{width:100%;min-width:90px}.att{border:1px solid #b8c2d8}.att 
 #toast{position:fixed;right:18px;bottom:18px;background:var(--navy);color:#fff;padding:9px 16px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:10}#toast.on{opacity:1}
 .sub{color:var(--mut);margin:-8px 0 12px}.tag{background:var(--navy);color:#fff;border-radius:5px;font-size:10px;padding:1px 6px}.right{margin-left:auto;display:flex;gap:8px}
 @media(max-width:760px){body{display:block}aside{width:auto;height:auto;position:static;display:flex;flex-wrap:wrap}aside h6,.logo small{display:none}}
+#sideTog{position:fixed;top:50%;left:210px;transform:translateY(-50%);width:16px;height:56px;padding:0;border:0;border-radius:0 8px 8px 0;background:var(--navy);color:#cfd8ee;font-size:15px;line-height:1;cursor:pointer;z-index:8;opacity:.85;box-shadow:2px 0 8px #0f1f3d33}#sideTog:hover,#sideTog:focus-visible{opacity:1;background:#1b2f5c;outline:none}body.side-off aside{display:none}body.side-off #sideTog{left:0}@media(max-width:760px){#sideTog{left:0!important;width:12px}}@media print{#sideTog{display:none!important}}
 @media print{aside,.top .btn,.top select,.chip,.noprint{display:none!important}body{background:#fff}main{padding:0}}
 .gt th,.gt td{text-align:center;padding:2px 3px;font-size:12px}.gt th{background:#f1f4fb}.gt .n{text-align:left;position:sticky;left:0;background:#fff;z-index:1;min-width:210px}.gt th:first-child{position:sticky;left:0;z-index:2}.gt td input.sc{min-width:0;width:44px;text-align:center;padding:3px}.gt .hps td{background:#fff8dd}.gt td.b{font-weight:800;background:#e8f7ef}.gt td.x{color:var(--red);font-weight:800}@page{size:landscape}
 .wi{width:58px;padding:3px;text-align:center}.tab b{margin-left:6px;color:#c0394a}
@@ -231,7 +232,7 @@ $('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
 function render(){
  if(SHARE)return shareRender();if(typeof pgRefresh==='function')pgRefresh();if(scan.on||scan.starting)stopScan(true);if(ensureQR())commit();
  const nav=[['dash','Dashboard',''],['h','Teacher forms'],['learners','Learners','SF1'],['record','Class Record','ECR'],['att','Attendance','SF2'],['books','Books','SF3'],['ecrx','Class Grades Record','DepEd'],['topx','Top Students & Certificates','New'],['hb','School Handbook',''],['h','School head forms'],['soon','Promotion · Health · Report Cards','SF5-10'],['set','Settings & Profile','']];
- $('#side').innerHTML=`<div class="logo"><i>SF</i><div>E-Class Record<small>SF1–SF10 · ${esc(S.p.year)}</small></div></div>`+nav.map(n=>n[0]==='h'?`<h6>${n[1]}</h6>`:`<div class="nav ${view===n[0]?'on':''}" onclick="${n[0]==='soon'?"toast('Not included in this version')":`go('${n[0]}')`}"><span>${n[1]}</span>${n[2]?`<b>${n[2]}</b>`:''}</div>`).join('')+`<p style="font-size:11px;color:#7d8db3;margin:16px 6px">Auto-saves every change on this device. Back up weekly in Settings.<br><span id="verTag">Version 2026.11.25-4 · <a href="#" style="color:inherit" onclick="updCheck(true);return false">Check for updates</a></span></p>`;
+ $('#side').innerHTML=`<div class="logo"><i>SF</i><div>E-Class Record<small>SF1–SF10 · ${esc(S.p.year)}</small></div></div>`+nav.map(n=>n[0]==='h'?`<h6>${n[1]}</h6>`:`<div class="nav ${view===n[0]?'on':''}" onclick="${n[0]==='soon'?"toast('Not included in this version')":`go('${n[0]}')`}"><span>${n[1]}</span>${n[2]?`<b>${n[2]}</b>`:''}</div>`).join('')+`<p style="font-size:11px;color:#7d8db3;margin:16px 6px">Auto-saves every change on this device. Back up weekly in Settings.<br><span id="verTag">Version 2026.11.28-1 · <a href="#" style="color:inherit" onclick="updCheck(true);return false">Check for updates</a></span></p>`;
  const c=C(),titles={dash:'Dashboard',learners:'Learners',record:'Class Record',att:'Attendance',books:'Books',ecrx:'Class Grades Record (DepEd ECR)',topx:'Top Students & Certificates',hb:'School Handbook',set:'Settings & Profile'};
  const sel=`<select onchange="S.cur=this.value;commit();render()">${S.classes.map(k=>`<option value="${k.id}" ${k.id===S.cur?'selected':''}>${esc(k.name)}</option>`).join('')||'<option>No class yet</option>'}</select>`;
  let body=''; if(!c&&view!=='set'&&view!=='dash'&&view!=='hb')body=`<div class="card">Create a class first.<br><br><button class="btn y" onclick="newClass()">+ New class</button></div>`;
@@ -1768,7 +1769,7 @@ function topView(){tcFonts();tcMigrate();if(!tc.cid||!S.classes.some(c=>c.id===t
 /* ===== Version and update check =====
    When a newer index.html is uploaded to the website, devices that still hold the old copy are told to reload. Saved records
    live in the browser for the site address and are not touched by an update. */
-const APP_VERSION='2026.11.25-4';
+const APP_VERSION='2026.11.28-1';
 async function updFetchVersion(){try{const url=location.href.split('#')[0].split('?')[0],r=await fetch(url,{cache:'no-store',headers:{Range:'bytes=0-3999'}});if(!r.ok)return null;
  let txt='';if(r.body&&r.body.getReader){const rd=r.body.getReader(),x=await rd.read();txt=new TextDecoder().decode(x.value||new Uint8Array());try{rd.cancel()}catch(e){}}else txt=(await r.text()).slice(0,4000);
  const m=/<meta name="app-version" content="([^"]+)"/.exec(txt);return m?m[1]:null}catch(e){return null}}
@@ -2296,4 +2297,11 @@ function xpShow(){
   <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn y" ${canSave?'':'disabled'} onclick="xpConfirm()">Confirm and Save Grades${st&&st.ready?' ('+st.ready+' score'+(st.ready===1?'':'s')+')':''}</button></div>`;
  box.scrollTop=top}
 
+
+/* ---- collapsible side menu: small tab on the left edge; remembered on this device (not part of the saved records) ---- */
+(function(){if(SHARE)return;const K='sf_side_off';let off=false;try{off=localStorage.getItem(K)==='1'}catch(e){}
+ const b=document.createElement('button');b.id='sideTog';b.type='button';
+ const paint=()=>{document.body.classList.toggle('side-off',off);b.textContent=off?'›':'‹';b.title=off?'Show the side menu':'Hide the side menu for a wider view';b.setAttribute('aria-label',b.title);b.setAttribute('aria-expanded',String(!off))};
+ b.onclick=()=>{off=!off;try{localStorage.setItem(K,off?'1':'0')}catch(e){}paint()};
+ document.body.appendChild(b);paint()})();
 </script></body></html>
